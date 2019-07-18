@@ -8,12 +8,6 @@
 
 <br>
 <br>
-목차
-[Spring Boot 2.1.5레퍼런스 번역해보기](spring-boot-2.1.5-레퍼런스-번역해보기)
-	[Spring Boot의 소개](#spring-boot-의-소개)
-
-
-
 
 ## Spring Boot 의 소개 
 
