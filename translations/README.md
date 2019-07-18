@@ -604,3 +604,5 @@ $ java -jar myproject.jar --spring.config.location=classpath:/default.properties
 | ------------------------------------------------------------ |
 | `spring.config.location`에 어떤 파일이라도 기술했다면 그 파일들중 프로파일 관련 것들은 대상이 되지 않는다. 프로파일 관련 프라퍼티들도 같이 사용하려면 `spring.config.location`에 디렉토리를 사용해야 한다. |
 
+
+
