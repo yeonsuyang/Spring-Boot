@@ -448,7 +448,7 @@ public class ExitCodeApplication {
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
-| 만약 어플리케이션이 실행 중인 HTTP 포트번호를 알려면, `local.server.port` 키로 프라퍼티를 조회합니다. |
+| 만약 어플리케이션이 실행 중인 HTTP 포트번호를 알려면, `local.server.port` 키로 프라퍼티를 조회하면 됩니다. |
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
@@ -458,51 +458,35 @@ public class ExitCodeApplication {
 
 ### 24. 외부화된 구성 by ys
 
-스프링 부트는 환경 설정을 외부에 할 수있게 해서 같은 어플리케이션 코드를 다른 환경에서 사용할 수있게 한다. 외부 환경 설정을 하기 위해 Properties 파일들, YAML 파일들, 환경변수들 그리고 Command-Line 인수들을 사용할 수 있다. 설정된 프라퍼티들은 `@Value`를 사용해 직접 빈들에 주입할 수도 있고, 스프링의 `Environment` 추상을 통해 접근하거나 `@ConfigurationProperties`를 통해 [구조화된 객체에 묶일 수도 있다.](https://kgmyh.github.io/blog/2017/12/10/spring-boot-chapter04/#heading-247-Type-safe-설정-프라퍼티들)
+Spring Boot를 사용하면 구성을 외부화하여 다른 환경에서 동일한 응용 프로그램 코드로 작업 할 수 있습니다. 외부화는 특성 파일, YAML 파일, 환경 변수 및 명령 행 인수를 사용하여 구성 할 수 있습니다. 설정된 프라퍼티들은 `@Value`를 사용해 직접 빈들에 주입할 수도 있고, Spring의 환경 추상화를 통해 액세스하거나 @ConfigurationProperties를 통해 구조화 된 객체에 바인딩(24.8) 할 수 있습니다.
 
 <br>
 
-스프링 부트는 값들을 합리적으로 재정의하도록 설계한 매우 특별한 `PropertySource` 순서를 사용한다. 프라퍼티들은 다음 순서대로 적용된다.
+스프링 부트는 현명하게 값들을 오버라이딩하도록 설계한 매우 특별한 `PropertySource` 순서를 사용합니다. 
 
-1. 홈 디렉토리상의 [Devtools의 전역설정 프라퍼티](https://kgmyh.github.io/blog/2017/12/04/spring-boot-chapter03/#heading-204-전역설정들)(devtools가 실행 중일때 `~/.spring-boot-devtools.properties`)
+프라퍼티들은 다음 순서대로 적용된다.
 
-2. 테스트 할 때 `@TestPropertySource` 어노테이션
-
-3. 테스트 할 때 `@SpringBootTest#properties` 어노테이션
-
+1. devtools 홈 디렉토리의 전역 설정(20.4)  등록 정보(devtools가 활성화 된 경우  `~/.spring-boot-devtools.properties`)
+2. 테스트의 `@TestPropertySource` 어노테이션
+3. 테스트의 properties 속성.  `@SpringBootTest` 어노테이션 및 애플리케이션의 특정 슬라이스를 테스트하기 위한 테스트 주석에서 사용 가능한..?
 4. Command-Line 인수
-
 5. `SPRING_APPLICATION_JSON`에 설정된 프라퍼티들(환경변수나 시스템 프라퍼티 내장된 inline JSON)
-
 6. `ServletConfig` 초기파라미터
-
 7. `ServletContext` 초기파라미터
-
 8. `java:comp/env`로 부터의 JNDI 속성
-
 9. Java 시스템 프라퍼티(`System.getProperties()`).
-
 10. 운영체제 환경변수
-
-11. ```
-    random.*` 형태의 프라퍼티들만 가지고 있는 `RandomValuePropertySource
-    ```
-
+11. `random.*` 에 있는 속상만 가진 `RandomValuePropertySource`
 12. 패키지된 jar 파일 외부의 [프로파일 관련 어플리케이션 프라퍼티들](https://kgmyh.github.io/blog/2017/12/10/spring-boot-chapter04/#heading-244-프로파일-관련-프라퍼티들)(`application-{profile}.properties`와 YAML 문서)
-
 13. 패키지된 jar 파일 내부의 [프로파일 관련 어플리케이션 프라퍼티들](https://kgmyh.github.io/blog/2017/12/10/spring-boot-chapter04/#heading-244-프로파일-관련-프라퍼티들)(`application-{profile}.properties`와 YAML 문서)
-
 14. 패키지된 jar 파일 외부의 어플리케이션 프라퍼티들 (`application.properties`와 YAML 문서)
-
 15. 패키지된 jar 파일 내부의 어플리케이션 프라퍼티들 (`application.properties`와 YAML 문서)
-
 16. `@Configuration`클래스에 선언한 `@PropertySource` 어노테이션
-
 17. 기본 프라퍼티들 (`SpringApplication.setDefaultProperties`를 사용해 작성된)
 
 <br>
 
-구체적인 예제를 제공하기 위해, `name` 프라퍼티를 사용하는 `@Component`를 다음 예제와 같이 개발하고 있다고 가정한다.
+구체적인 예제를 제공하기 위해, `name` 프라퍼티를 사용하는 `@Component`를 다음 예제와 같이 개발하고 있다고 가정했을 때
 
 ```java
 import org.springframework.stereotype.*;
@@ -520,17 +504,23 @@ public class MyBean {
 
 <br>
 
-어플리케이션의 클래스패스(jar파일 내)상에 `application.properties` 파일이`name`에 대한 유용한 기본 프라퍼티 값을 제공할 수있다. 새로운 환경에서 실행될 때, `name`을 재정의한 `application.properties` 파일이 jar파일 외부에서 제공될 수도 있다. 일회성 테스트를 위해 시작할 때 Command-Line 인수를 이용해 전달 할 수 있다. (예를 들어 `java -jar app.jar --name="Spring"`).
+1. 어플리케이션의 클래스패스(jar파일 내)상에 `application.properties` 파일이 `name`에 대한 기본 프라퍼티 값을 제공할 수있습니다.
+
+2. 새로운 환경이 실행될 때, `name`을 재정의한 `application.properties` 파일이 jar파일 외부에서 제공될 수도 있습니다. 
+
+3. 일회성 테스트를 위해 시작할 때 Command-Line 인수를 이용해 전달 할 수 있습니다. (예를 들어 `java -jar app.jar --name="Spring"`).
+
+   
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
-| `SPRING_APPLICATION_JSON` 프라퍼티는 환경변수로 Command line상에서 제공될 수 있다. 예를 들어 다음 라인을 UNI*X 쉘에서 사용할 수있다. **$ SPRING_APPLICATION_JSON='{"acme":{"name":"test"}}' java -jar myapp.jar** 위 예가 실행되면, 스프링 `Environment`에서는 `acme.name=test`로 된다. JSON을 시스템 프라퍼티에서 `spring.application.json`을 사용해 다음 예처럼 제공할 수도 있다. **$ java -Dspring.application.json='{"name":"test"}' -jar myapp.jar** JSON을 Command-line 인수를 사용해 다음 예 처럼 제공할 수도 있다. **$ java -jar myapp.jar –spring.application.json='{"name":"test"}'** 다음과 같이 JNDI 변수를 이용해 JSON을 제공을 할 수도 있다.  `**java:comp/env/spring.application.json** |
+| `SPRING_APPLICATION_JSON` 프라퍼티는 환경변수로 Command line상에서 제공될 수 있습니다.                              예를 들어 다음 라인을 UNI*X 쉘에서 사용할 수있습니다.                                                                                                       **$ SPRING_APPLICATION_JSON='{"acme":{"name":"test"}}' java -jar myapp.jar**                                          위 예가 실행되면, 스프링 `Environment`에서는 `acme.name=test`로 됩니다.  JSON을 시스템 프라퍼티에서 `spring.application.json`을 사용해 다음 예처럼 제공할 수도 있습니다.                                                                          **$ java -Dspring.application.json='{"name":"test"}' -jar myapp.jar**                                                           JSON을 Command-line 인수를 사용해 다음 예 처럼 제공할 수도 있다.                                                                               **$ java -jar myapp.jar –spring.application.json='{"name":"test"}'**                                                                      다음과 같이 JNDI 변수를 이용해 JSON을 제공을 할 수도 있다.  `**java:comp/env/spring.application.json** |
 
 #### 
 
 #### 24.1 임의의 값 구성
 
-`RandomValuePropertySource`는 임의의 값들을 주입할때 유용하다. (예를 들어 비밀값패스워드같은또는 테스트 케이스들에 ). 랜덤 값으로 Integer, long, uuid나 스트링 들을 다음 예와 같이 생성한다.
+`RandomValuePropertySource`는 임의의 값들을 주입할때 유용합니다. (예를 들어 비밀값 패스워드 또는 테스트 케이스들과 같은). 랜덤 값으로 Integer, long, uuid나 스트링 들을 다음 예와 같이 생성합니다.
 
 ```java
  my.secret = $ {random.value}
@@ -541,28 +531,28 @@ public class MyBean {
  my.number.in.range = $ {random.int [1024,65536]}
 ```
 
-`random.int*` 구문은 `OPEN value (,max) CLOSE`이다. `OPEN,CLOSE`는 어떤 문자든 올수있고 `value, max`는 정수들이다. 만약 `max`가 제공되면 `value`는 최소값이고 `max`는 최대값이된다. (배타적이다)
+`random.int*` 구문은 `OPEN value (,max) CLOSE`입니다. `OPEN,CLOSE`는 어떤 문자든 올수있고 `value, max`는 정수들이다. 만약 `max`가 제공되면 `value`는 최소값이고 `max`는 최대값이됩니다. (배타적)
 
 <br>
 
 #### 24.2 명령행 특성 액세스
 
-기본적으로 `SpringApplication`은 모든 command line 옵션 인수(이 인수들은 '–'로 시작한다. 예를 들어 `--server.port=9000`)를 `property`로 변환한 뒤 Spring `Environment`에 추가한다.
+기본적으로 `SpringApplication`은 모든 command line 옵션 인수(이 인수들은 '–'로 시작한다. 예를 들어 `--server.port=9000`)를 `property`로 변환한 뒤 Spring `Environment`에 추가합니다.
 
-Command line 프라퍼티들이 `Environment`에 추가 안되게 하려면 `SpringApplication.setAddCommandLineProperties(false)`를 사용해서 비활성화 시킬 수 있다.
+Command line 프라퍼티들이 `Environment`에 추가 안되게 하려면 `SpringApplication.setAddCommandLineProperties(false)`를 사용해서 비활성화 시킬 수 있습니다.
 
 <br>
 
 #### 24.3 응용 프로그램 속성 파일
 
-`SpringApplication`은 다음 경로에 있는 `application.properties` 파일의 프라퍼티들을 가져와서 Spring `Environment`에 추가한다.
+`SpringApplication`은 다음 경로에 있는 `application.properties` 파일의 프라퍼티들을 가져와서 Spring `Environment`에 추가합니다.
 
 1. 현재 디렉토리의 하위디렉토리인 `/config`
 2. 현재 디렉토리
 3. 클래스패스 상의 `/config` 패키지
 4. 루트 클래스패스
 
-위의 목록은 우선순위 순이다 (목록의 상위에 정의한 프라퍼티들은 하위에 정의한 것을 우선한다.)
+위의 목록은 우선순위 순입니다. (목록의 상위에 정의한 프라퍼티들은 하위에 정의한 것을 우선한다.)
 
 <br>
 
@@ -570,19 +560,25 @@ Command line 프라퍼티들이 `Environment`에 추가 안되게 하려면 `Spr
 | ------------------------------------------------------------ |
 | 또한 '.properties'대신 [YAML ( '.yml') 파일](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-yaml) 을 [사용할](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-yaml) 수 있습니다 . |
 
-파일명으로 `application.properties`말고 다른 것을 쓰려면 `spring.config.name` 환경 설정의 값으로 지정하면된다. 또 `spring.config.location` 환경설정을 사용해 명시적으로 위치를 지정할 수 있다. (디렉토리 위치나 파일 경로를 여러개 설정할 경우 구분자로 쉼표를 사용한다.) 다음 예제는 다른 파일명을 명시하는 방법을 보여준다.
+<br>
+
+파일명으로 `application.properties`말고 다른 것을 쓰려면 `spring.config.name` 환경 설정의 값으로 지정하면 됩니다. 또 `spring.config.location` 환경설정을 사용해 명시적으로 위치를 지정할 수 있습니다. (디렉토리 위치나 파일 경로를 여러개 설정할 경우 구분자로 쉼표를 사용합니다.) 다음 예제는 다른 파일명을 명시하는 방법을 보여줍니다.
 
 ```java
 $ java -jar myproject.jar --spring.config.name=myproject
 ```
 
-다음 예제는 두개의 경로를 어떻게 지정하는지 보여준다.
+<br>
+
+다음 예제는 두개의 경로를 어떻게 지정하는지 보여줍니다.
 
 ```
 $ java -jar myproject.jar --spring.config.location=classpath:/default.properties,classpath:/override.properties
 ```
 
-[^spring.config.name과 `spring.config.location&#39;은 어떤 파일들을 로드할지 결정해야 하기 때문에 일찍 사용된다. 그래서 환경 설정Property으로 정의해야만 한다. (일반적으로 OS 환경변수, 시스템 프라퍼티 또는 Command line 인수)]: 
+[^`spring.config.name`과 `spring.config.location`은 어떤 파일들을 로드할지 결정해야 하기 때문에 일찍 사용됩니다. 그래서 환경 설정Property로 정의해야만 합니다. (일반적으로 OS 환경변수, 시스템 프라퍼티 또는 Command line 인수)]: 
+
+<br>
 
 `spring.config.location`가 디렉토리들(파일의 반대의 의미로)을 지정하면 `/`로 끝나도록 해야 한다. (그렇게 실행하면 로딩전에 프로필-관련 파일이름을 포함한 `spring.config.name`의 파일명이 뒤에 붙는다.) `spring.config.location`에 명시한 파일명은 프로파일 관련 변경 지원 없이 그대로 사용하고 모든 프로파일 관련 프라퍼티들을 덮어쓴다.
 
