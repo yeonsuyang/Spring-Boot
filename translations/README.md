@@ -7,6 +7,9 @@
 우리가 번역시도해 본 원본 : https://app.gitbook.com/@wannaqueen/s/spring5/spring-boot by ys, ks, sh
 
 <br>
+
+[TOC]
+
 <br>
 
 ## Spring Boot 의 소개 
@@ -534,7 +537,7 @@ public class MyBean {
 
 #### 24.2 명령행 특성 액세스
 
-기본적으로 `SpringApplication`은 모든 command line 옵션 인수(이 인수들은 '–'로 시작한다. 예를 들어 `--server.port=9000`)를 `property`로 변환한 뒤 Spring `Environment`에 추가합니다.
+기본적으로, `SpringApplication`은 모든 command line 옵션 인수(이 인수들은 '–'로 시작한다. 예를 들어 `--server.port=9000`)를 `property`로 변환한 뒤 Spring `Environment`에 추가합니다.
 
 Command line 프라퍼티들이 `Environment`에 추가 안되게 하려면 `SpringApplication.setAddCommandLineProperties(false)`를 사용해서 비활성화 시킬 수 있습니다.
 
@@ -559,7 +562,7 @@ Command line 프라퍼티들이 `Environment`에 추가 안되게 하려면 `Spr
 
 <br>
 
-파일명으로 `application.properties`말고 다른 것을 쓰려면 `spring.config.name` 환경 설정의 값으로 지정하면 됩니다. 또 `spring.config.location` 환경설정을 사용해 명시적으로 위치를 지정할 수 있습니다. (디렉토리 위치나 파일 경로를 여러개 설정할 경우 구분자로 쉼표를 사용합니다.) 다음 예제는 다른 파일명을 명시하는 방법을 보여줍니다.
+파일명으로 `application.properties`말고 다른 것을                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   쓰려면 `spring.config.name` 환경 설정의 값으로 지정하면 됩니다. 또 `spring.config.location` 환경설정을 사용해 명시적으로 위치를 지정할 수 있습니다. (디렉토리 위치나 파일 경로를 여러개 설정할 경우 구분자로 쉼표를 사용합니다.) 다음 예제는 다른 파일명을 명시하는 방법을 보여줍니다.
 
 ```java
 $ java -jar myproject.jar --spring.config.name=myproject
@@ -573,58 +576,252 @@ $ java -jar myproject.jar --spring.config.name=myproject
 $ java -jar myproject.jar --spring.config.location=classpath:/default.properties,classpath:/override.properties
 ```
 
-[^`spring.config.name`과 `spring.config.location`은 어떤 파일들을 로드할지 결정해야 하기 때문에 일찍 사용됩니다. 그래서 환경 설정Property로 정의해야만 합니다. (일반적으로 OS 환경변수, 시스템 프라퍼티 또는 Command line 인수)]: 
+[^`spring.config.name`과 `spring.config.location`은 어떤 파일들을 로드할지 결정해야 하기 때문에 일찍 로드됩니다. 그래서 환경 설정Property로 정의해야만 합니다. (일반적으로 OS 환경변수, 시스템 프라퍼티 또는 Command line 인수)]: 
 
 <br>
 
-`spring.config.location`가 디렉토리들(파일의 반대의 의미로)을 지정하면 `/`로 끝나도록 해야 한다. (그렇게 실행하면 로딩전에 프로필-관련 파일이름을 포함한 `spring.config.name`의 파일명이 뒤에 붙는다.) `spring.config.location`에 명시한 파일명은 프로파일 관련 변경 지원 없이 그대로 사용하고 모든 프로파일 관련 프라퍼티들을 덮어쓴다.
+`spring.config.location`에 파일이 아닌 디렉토리가 있으면  `/`로 끝나도록 해야 합니다. (그러면, 런타임 때, 로드 되기 전에  `spring.config.name`에서 프로파일 관련 파일이름을 포함하여 생성 된 이름이 추가 됩니다. ) `spring.config.location`에 명시한 파일명은 프로파일 관련 변경 지원 없이 그대로 사용하고 모든 프로파일 관련 프라퍼티들을 덮어씁니다.
 
-설정 위치는 작성된 역순으로 찾는다. 기본적인 설정 위치는 `classpath:/, classpath:/config/, file:./, file:./config/` 이다. 검색 순서 결과는 다음과 같다.
+<br>
+
+설정 위치는 작성된 역순으로 찾는다. 기본적인 설정 위치는 `classpath:/, classpath:/config/, file:./, file:./config/` 이다. 검색 순서 결과는 다음과 같습니다.
 
 1. file:./config/
 2. file:./
 3. classpath:/config/
 4. classpath:/
 
-`spring.config.location`을 사용해 사용자 정의 위치를 설정하면 그 설정이 기본 위치를 대신한다. 예를 들어 `spring.config.location`에 `classpath:/custom-config/,file:./custom-config/`을 설정하면, 검색 순서는 다음과 같다.
+<br>
+
+`spring.config.location`을 사용해 사용자 정의 위치를 설정하면 그 설정이 기본 위치를 대신한다. 예를 들어 `spring.config.location`에 `classpath:/custom-config/,file:./custom-config/`을 설정하면, 검색 순서는 다음과 같습니다.
 
 1. file:./custom-config/
+
 2. classpath:custom-config/
 
-`spring.config.additional-location`을 사용해 사용자정의 설정 위치를 지정하면, 기본 위치에 추가되어 사용된다. 추가 위치는 기본 위치 전에 검색된다. 예를 들어 `classpath:/custom-config/,file:./custom-config/`을 추가 위치로 설정하면, 검색 순서는 다음과 같다.
+   <br>
+
+또는 `spring.config.additional-location`을 사용해 사용자정의 구성 위치를 지정할 때, 기본 위치에 추가되어 사용됩니다. 추가 위치는 기본 위치 전에 검색됩니다. 예를 들어 `classpath:/custom-config/,file:./custom-config/`을 추가 위치로 설정하면, 검색 순서는 다음과 같습니다.
 
 1. file:./custom-config/
+
 2. classpath:custom-config/
+
 3. file:./config/
+
 4. file:./
+
 5. classpath:/config/
+
 6. classpath:/
 
-이 검색순서를 이용하면 하나의 설정파일에 기본 설정 값들을 명시해서 선택적으로 다른 값으로 대체할 수 있다. 어플리케이션을 위한 기본값들은 기본 경로중 한 곳에 있는 `application.properties`파일(또는 `spring.config.name`으로 선택한 다른 기반이름basename)로 제공할 수있다. 이 기본값들은 실행시 사용자정의 경로 중 하나에 있는 다른 파일로 대체될 수 있다.
+   <br>
+
+이 검색순서를 이용하면 하나의 설정파일에 기본 설정 값들을 명시해서 선택적으로 다른 값으로 대체할 수 있습니다. 어플리케이션을 위한 기본값들은 기본 경로중 한 곳에 있는 `application.properties`파일(또는 `spring.config.name`으로 선택한 다른 basename)로 제공할 수있습니다. 이 기본값들은 실행시 사용자정의 경로 중 하나에 있는 다른 파일로 대체될 수 있습니다.
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
-| 시스템 프라퍼티 말고 환경변수를 사용하는 경우, 대부분의 운영체제는 키 이름을 `.`으로 구분하는 것을 허용하지 않는다. 그래서 `.` 대신 `_`을 사용한다. (예를 들어 `spring.config.name`은 대신 `SPRING_CONFIG_NAME`으로 한다. |
+| 시스템 프라퍼티 말고 환경변수를 사용하는 경우, 대부분의 운영체제는 키 이름을 `.`으로 구분하는 것을 허용하지 않습니다. 그래서 `.` 대신 `_`을 사용해야합니다. (예를 들어 `spring.config.name`은 대신 `SPRING_CONFIG_NAME`으로 합니다. |
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
-| 만약 어플리케이션이 컨테이너에서 실행된다면 jndi 프라퍼티(`java:comp/env` 안의)나 Servlet Context 초기파라미터가 환경변수나 시스템 프라퍼티 대신(또는 뿐만 아니라) 사용될 수 있다. |
+| 만약 어플리케이션이 컨테이너에서 실행된다면 jndi 프라퍼티(`java:comp/env` 안의)나 Servlet Context 초기파라미터가 환경변수나 시스템 프라퍼티 대신(또는 뿐만 아니라) 사용될 수 있습니다. |
 
 <br>
 
 #### 24.4 프로파일 관련 프라퍼티들
 
-`application.properties` 파일에 더해서 프로파일 관련 프라퍼티들을 `application-{profile}.properties` 이름 관례를 사용해 정의할 수있다. `Environment`는 프로파일들이 설정되 있지 않은 경우 사용할 기본 프로파일들을(기본적으로 `[default]`) 가지고 있다. 프로파일들이 명시적으로 활성화 되있지 않으면 `application-default.properties`가 읽어들여 진다. 프로파일 관련 프라퍼티들은 표준 `application.properties`와 같은 위치로 부터 읽혀진다. 프로파일 관련 파일들이 package.jar 안에 있던 밖에 있던 프로파일 관련 아닌non-specific[3](https://kgmyh.github.io/blog/2017/12/10/spring-boot-chapter04/#fn:3) 파일들의 설정보다 항상 우선한다.
+`application.properties` 파일 외에도, 프로파일 관련 프라퍼티들을 `application-{profile}.properties` 이름 관례를 사용해 정의할 수있습니다. `Environment`는 프로파일들이 설정되 있지 않은 경우 사용할 기본 프로파일들(기본적으로 `[default]`) 이 있습니다. 즉, 프로파일들이 명시적으로 활성화 되있지 않으면 `application-default.properties`가 로드 집니다. 
 
 <br>
 
-프로파일 관련 파일들이 여러 개일 경우 마지막 것이 이기는 전략이 적용된다.last-wins strategy 예를 들어 `spring.profiles.active` 프라퍼티에 의해 명시된 프로피일들은 `SpringApplication` API를 통해 설정된 것 뒤에 추가 되어서 우선권을 얻는다.
+프로파일 관련 프라퍼티들은 표준 `application.properties`와 같은 위치로 부터 로드되며, 프로파일 관련 파일들이 package.jar 안에 있던 밖에 있던 관계없이 프로파일 관련 아닌 non-specific 파일들의 설정보다 항상 우선시 됩니다.
+
+<br>
+
+프로파일 관련 파일들이 여러 개일 경우 마지막 것이 이기는 전략이 적용됩니다.(last-wins strategy) 예를 들어 `spring.profiles.active` 프라퍼티에 의해 명시된 프로피일들은 `SpringApplication` API를 통해 구성된 프로파일 다음에 추가되므로 우선 적용됩니다.
 
 <br>
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
-| `spring.config.location`에 어떤 파일이라도 기술했다면 그 파일들중 프로파일 관련 것들은 대상이 되지 않는다. 프로파일 관련 프라퍼티들도 같이 사용하려면 `spring.config.location`에 디렉토리를 사용해야 한다. |
+| `spring.config.location`에 파일을 지정한 경우, 해당 파일의 프로파일 별 변형은 고려되지 않습니다. 프로파일 관련 프라퍼티들도 같이 사용하려면 `spring.config.location`에 디렉토리를 사용해야 합니다. |
 
 
+
+#### 24.5 Placeholders in Properties
+
+> placeholder : (computer code) 위치 표시자 
+
+<br>
+
+`application.properties` 에 설정된 값들은 사용될 때 `Environment`로 들어갑니다. 그래서 전에 정의한 값들을 참조할 수있습니다. (예를 들어 시스템 프라퍼티들로 부터)
+
+```properties
+app.name=MyApp
+app.description=${app.name} is a Spring Boot application
+```
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| 이 기술은 이미 있는 Spring Boot 프라퍼티들의 이름을 짧게 만드는데 사용할 수있습니다. 자세한 것은 [73.4 "'짧은' Command Line 인수들 사용하기](http://localhost:4000/blog/2017/12/19/spring-boot-chapter09/#heading-734-짧은-command-line-인수들-사용하기)를 보십시오. |
+
+<br>
+
+#### 24.6 속성의 암호화
+
+스프링 부트는 속성 값 암호화를위한 지원이 내장되어 있지는 않지만 스프링 `Environment`에 포함 된 값을 수정하는 데 필요한 후크 포인트를 제공합니다. `EnvironmentPostProcessor`인터페이스를 사용하면 응용 프로그램이 시작되기 전에 `Environment`조작 할 수 있습니다. 
+
+자세한 내용 [은 76.3 절. "시작하기 전에 환경 또는 ApplicationContext를 사용자 정의"](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-customize-the-environment-or-application-context) 를 참조하십시오.
+
+
+
+자격 증명과 패스워드를 안전하게 저장하는 방법을 찾고 있다면, [Spring Cloud Vault](https://cloud.spring.io/spring-cloud-vault/) 프로젝트는 [HashiCorp Vault에](https://www.vaultproject.io/) 외부화 된 설정을 저장하는 것을 지원한다 .
+
+
+
+#### 24.7 Properties 대신 yaml 사용하기
+
+[YAML](https://yaml.org/) 은 JSON의 상위 집합이며, 따라서 계층 적 구성 데이터를 지정하는 데 편리한 형식입니다. 이 `SpringApplication`클래스는 classpath에 [SnakeYAML](https://bitbucket.org/asomov/snakeyaml) 라이브러리가 있을 때마다 자동으로 YAML을 속성의 대안으로 지원합니다 .
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| "Starters"를 사용하면 `spring-boot-starter`의해 snakeYAML이 자동으로 제공됩니다. |
+
+##### 24.7.1 YAML로드
+
+Spring Framework는 YAML 문서를 로드하는 데 사용할 수있는 두 가지 편리한 클래스를 제공합니다. `YamlPropertiesFactoryBean`은  YAML을 `Properties`로 로드하고, `YamlMapFactoryBean` 은 YAML을 `Map`으로 로드합니다.
+
+예를 들어 다음 YAML 문서를 생각해보십시오.
+
+```yaml
+environments:
+	dev:
+		url: https://dev.example.com
+		name: Developer Setup
+	prod:
+		url: https://another.example.com
+		name: My Cool App
+```
+
+
+
+앞의 예는 다음 속성으로 변환됩니다.
+
+```properties
+environments.dev.url=https://dev.example.com
+environments.dev.name=Developer Setup
+environments.prod.url=https://another.example.com
+environments.prod.name=My Cool App
+```
+
+YAML리스트는 `[index]` (dereferencers)와 함께 속성 키로 표시됩니다 . 예를 들어, 다음 YAML을 고려하십시오.
+
+```yaml
+my:
+servers:
+	- dev.example.com
+	- another.example.com
+```
+
+앞의 예는 다음 속성으로 변환됩니다.
+
+```properties
+my.servers [0] = dev.example.com
+my.servers [1] = another.example.com
+```
+
+Spring Boot의 `Binder`유틸리티 ( `@ConfigurationProperties`가 하는 것) 를 사용하여 속성에 바인딩하려면 `java.util.List` (or `Set`) 유형의 대상 bean에 속성이 있어야하며 setter를 제공하거나 또는 변경할 수있는 값으로 초기화하십시오. 예를 들어 다음 예제는 이전에 표시된 속성에 바인딩합니다.
+
+```java
+@ConfigurationProperties(prefix="my")
+public class Config {
+
+	private List<String> servers = new ArrayList<String>();
+
+	public List<String> getServers() {
+		return this.servers;
+	}
+}
+```
+
+
+
+##### 24.7.2 Spring 환경에서 YAML을 속성으로 노출시키기
+
+`YamlPropertySourceLoader` 클래스는 같은 Spring `Environment`에서 YAML을 노출하는 데  `PropertySource` 로 노출 시키는데 사용될 수 있습니다. 이렇게하면 `@Value` annotation을 사용하여 YAML 속성에 액세스 할 수 있습니다.
+
+
+
+##### 24.7.3 다중 프로필 YAML 문서
+
+다음 예제와 같이 `spring.profiles` 키를 사용하여 문서가 적용되는 시기를 나타내는 단일 프로필에 여러 프로필 관련 YAML 문서를 지정할 수 있습니다 .
+
+```yaml
+server:
+	address: 192.168.1.100
+---
+spring:
+	profiles: development
+server:
+	address: 127.0.0.1
+---
+spring:
+	profiles: production & eu-central
+server:
+	address: 192.168.1.120
+```
+
+앞의 예에서 `development `프로필이 활성화 된 경우  `server.address` 속성은 `127.0.0.1`입니다. 마찬가지로 `production` and 및 `eu-central` profiles이 활성화 된 경우 `server.address`속성은 `192.168.1.120`입니다. 
+
+`development`, `production`및 `eu-central `프로파일이 활성화 되지 않은 경우, 속성 값은 `192.168.1.100`입니다.
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 그러므로 `spring.profiles`는 간단한 프로필 이름 (예 `production`:) 또는 프로파일 표현식을 포함 할 수 있습니다 . 프로파일 표현식은 보다 복잡한 프로파일 로직이 표현되도록 합니다.(예 : `production & (eu-central | eu-west)`.) 자세한 내용 은 [참조 가이드](https://docs.spring.io/spring/docs/5.1.7.RELEASE/spring-framework-reference/core.html#beans-definition-profiles-java) 를 확인하십시오. |
+
+응용 프로그램 컨텍스트가 시작될 때 명시 적으로 활성화 된 것이 없으면 기본 프로파일이 활성화됩니다. 따라서 다음 YAML에서는 "default"프로필 에서만 사용할 수 있는  `spring.security.user.password` 값을 설정 합니다.
+
+```yaml
+server:
+  port: 8000
+---
+spring:
+  profiles: default
+  security:
+    user:
+      password: weak
+```
+
+다음 예제에서 암호는 프로파일에 연결되지 않았기 때문에 항상 설정되며 필요에 따라 다른 모든 프로파일에서 명시적으로 재설정해야합니다.
+
+```yaml
+server:
+  port: 8000
+spring:
+  security:
+    user:
+      password: weak
+```
+
+`spring.profiles` 요소 를 사용하여 지정된 스프링 프로파일 은 `!`문자 를 사용하여 선택적으로 무효화 될 수 있습니다 . 단일 문서에 대해 음수 및 음화가 아닌 프로파일이 모두 지정되면 음수가 아닌 하나 이상의 프로파일이 일치해야하며 음수 프로파일이 일치하지 않아야합니다.
+
+##### 24.7.4 YAML 결점
+
+YAML 파일은 `@PropertySource`주석을 사용하여로드 할 수 없습니다 . 그런 식으로 값을로드해야하는 경우 속성 파일을 사용해야합니다. 
+
+프로필 관련 YAML 파일에서 다중 YAML 문서 구문을 사용하면, 예기치 않은 동작이 발생할 수 있습니다. 예를 들어  `dev`프로파일이 활성화 된  상태에서 `application-dev.yml`  파일에 다음 구성을 고려하십시오.
+
+```yaml
+server:
+  port: 8000
+---
+spring:
+  profiles: !test
+  security:
+    user:
+      password: weak
+```
+
+위의 예에서 프로필 부정 및 프로필 식은 예상대로 작동하지 않습니다. 프로필 별 YAML 파일과 여러 YAML 문서를 결합하지 말고 하나만 사용하는 것이 좋습니다.
 
