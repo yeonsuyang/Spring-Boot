@@ -674,11 +674,11 @@ app.description=${app.name} is a Spring Boot application
 
 자세한 내용 [은 76.3 절. "시작하기 전에 환경 또는 ApplicationContext를 사용자 정의"](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-customize-the-environment-or-application-context) 를 참조하십시오.
 
-
+<br>
 
 자격 증명과 패스워드를 안전하게 저장하는 방법을 찾고 있다면, [Spring Cloud Vault](https://cloud.spring.io/spring-cloud-vault/) 프로젝트는 [HashiCorp Vault에](https://www.vaultproject.io/) 외부화 된 설정을 저장하는 것을 지원한다 .
 
-
+<br>
 
 #### 24.7 Properties 대신 yaml 사용하기
 
@@ -687,6 +687,8 @@ app.description=${app.name} is a Spring Boot application
 | ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
 | ------------------------------------------------------------ |
 | "Starters"를 사용하면 `spring-boot-starter`의해 snakeYAML이 자동으로 제공됩니다. |
+
+<br>
 
 ##### 24.7.1 YAML로드
 
@@ -704,7 +706,7 @@ environments:
 		name: My Cool App
 ```
 
-
+<br>
 
 앞의 예는 다음 속성으로 변환됩니다.
 
@@ -745,13 +747,13 @@ public class Config {
 }
 ```
 
-
+<br>
 
 ##### 24.7.2 Spring 환경에서 YAML을 속성으로 노출시키기
 
 `YamlPropertySourceLoader` 클래스는 같은 Spring `Environment`에서 YAML을 노출하는 데  `PropertySource` 로 노출 시키는데 사용될 수 있습니다. 이렇게하면 `@Value` annotation을 사용하여 YAML 속성에 액세스 할 수 있습니다.
 
-
+<br>
 
 ##### 24.7.3 다중 프로필 YAML 문서
 
@@ -806,6 +808,8 @@ spring:
 
 `spring.profiles` 요소 를 사용하여 지정된 스프링 프로파일 은 `!`문자 를 사용하여 선택적으로 무효화 될 수 있습니다 . 단일 문서에 대해 음수 및 음화가 아닌 프로파일이 모두 지정되면 음수가 아닌 하나 이상의 프로파일이 일치해야하며 음수 프로파일이 일치하지 않아야합니다.
 
+<br>
+
 ##### 24.7.4 YAML 결점
 
 YAML 파일은 `@PropertySource`주석을 사용하여로드 할 수 없습니다 . 그런 식으로 값을로드해야하는 경우 속성 파일을 사용해야합니다. 
@@ -825,3 +829,706 @@ spring:
 
 위의 예에서 프로필 부정 및 프로필 식은 예상대로 작동하지 않습니다. 프로필 별 YAML 파일과 여러 YAML 문서를 결합하지 말고 하나만 사용하는 것이 좋습니다.
 
+<br>
+
+#### 24.8 Type-safe Configuration Properties
+
+`@Value("${property}")`주석을 사용하여  configuration properties 정보를 주입하는 것은 때로는 특히 여러 속성을 사용하여 작업하거나 데이터가 사실상 계층 적이기 때문에 번거로운 작업이 될 수 있습니다. 
+
+
+
+>    /** variable ottCmUri. */
+>     @Value("${ott_auth.uri}")
+>
+> @Value("${spring.redis.sentinel.master}") String redisSentinelMaster
+> 			, @Value("${spring.redis.sentinel.nodes}") String redisSentinelNodes
+> 			, @Value("${spring.redis.password}") String redisPassword){
+>
+> }
+
+Spring Boot는 다음 예제와 같이 강력하게 유형이 지정된 bean이 응용 프로그램의 구성을 관리하고 유효하게하는 등록 정보로 작업하는 대체 방법을 제공합니다.
+
+```java
+package com.example;
+
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties("acme")
+public class AcmeProperties {
+
+	private boolean enabled;
+
+	private InetAddress remoteAddress;
+
+	private final Security security = new Security();
+
+	public boolean isEnabled() { ... }
+
+	public void setEnabled(boolean enabled) { ... }
+
+	public InetAddress getRemoteAddress() { ... }
+
+	public void setRemoteAddress(InetAddress remoteAddress) { ... }
+
+	public Security getSecurity() { ... }
+
+	public static class Security {
+
+		private String username;
+
+		private String password;
+
+		private List<String> roles = new ArrayList<>(Collections.singleton("USER"));
+
+		public String getUsername() { ... }
+
+		public void setUsername(String username) { ... }
+
+		public String getPassword() { ... }
+
+		public void setPassword(String password) { ... }
+
+		public List<String> getRoles() { ... }
+
+		public void setRoles(List<String> roles) { ... }
+
+	}
+}
+```
+
+위의 POJO는 다음 속성을 정의합니다.
+
+- `acme.enabled`값은 `false`기본적으로입니다.
+- `acme.remote-address`에서 강제로  `String`유형을 지정할 수 있습니다.
+- `acme.security.username`속성의 이름에 따라 이름이 결정되는 중첩 된 "security"객체가 있습니다. 특히 반환 유형은 전혀 사용되지 않으며 `SecurityProperties` 가 될 수 있습니다.
+- `acme.security.password`.
+- `acme.security.roles`,`String`의 컬렉션과 함께.
+
+<br>
+
+> "getter / setter를 가진 단순한 자바 오브젝트"는 POJO이다. 
+
+<br>
+
+> ## ConfigurationProperties
+>
+> 두 번째는 `@ConfigurationProperties` 어노테이션과 관련된 설정이다. `@ConfigurationProperties` 속성에 대해서 알아볼 건 아니고 관련된 설정방법들을 알아볼 예정이다.
+>
+> ```java
+> @ConfigurationProperties("foo")
+> public class FooProperties {
+>   private String name = "100";
+>   //getter setter ...
+> }
+> ```
+>
+> 만약 위와 같은 프로퍼티가 있다고 가정하자. 위와 같이해서 컴파일을 해보면 `foo`라는 prefix로 json 파일이 자동으로 만들어진다. 물론 `configuration-processor`를 디펜더스 받아야 한다. name 이라는 프로퍼티는 `100`이라는 기본값을 갖고 있다.
+> `application.properties` 파일에 `foo.name`이라는 속성을 입력할 수 있다. IDEA 경우에는 자동완성도 해준다.
+> 기본적으로는 위와 같이 하면 자동으로 만들어 주지만 약간의 설정을 추가할 수 있다.
+> `/resources/META-INF` 경로 아래에 `additional-spring-configuration-metadata.json` 파일을 만들어 추가하여 속성을 정의해주면 좀 더 나은 프로퍼티를 설정할 수 있다.
+>
+> 출처 : <http://wonwoo.ml/index.php/post/1599>
+
+<br>
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| Getter와 setter는 Spring MVC와 마찬가지로 표준 Java Beans 프로퍼티 디스크립터를 통해 바인딩되기 때문에 보통 필수이다. 다음과 같은 경우에는 setter를 생략 할 수 있습니다. |
+| - Map들은 바인더로 변경 될 수 있기 때문에 초기화 될 때까지 getter가 필요하지만 setter 는 필요없습니다. |
+| - 컬렉션과 배열은 인덱스 (일반적으로 YAML) 또는 쉼표로 구분 된 단일 값 (속성)을 사용하여 액세스 할 수 있습니다. 후자의 경우 setter는 필수입니다. 항상 이러한 유형의 setter를 추가하는 것이 좋습니다. 콜렉션을 초기화하는 경우, 콜렉션이 불변이 아닌지 확인하십시오 (앞의 예와 같이). |
+| - 앞의 예제에서 `Security`와 같이 중첩 된 POJO 속성이 초기화 되면 setter가 필요하지 않습니다. 바인더가 기본 생성자를 사용하여 즉석에서 인스턴스를 만들려면 setter가 필요합니다. |
+| 어떤 사람들은 Project Lombok을 사용하여 getter와 setter를 자동으로 추가합니다. Lombok이 컨테이너에서 자동으로 개체를 인스턴스화 할 때 사용되는 특정 형식의 생성자를 생성하지 않았는지 확인합니다. |
+
+<br>
+
+> Lombok은 자바에서 @Getter, @Setter 같은 annotation 기반으로 관련 기존 DTO, VO, Domain Class 작성할 때, 멤버 변수에 대한 Getter/Setter Method, Equals(), hashCode(), ToString()과 멤버 변수에 값을 설정하는 생성자 등등을 자동으로 생성해 주는 라이브러리다. 
+>
+> 출처: <https://ijbgo.tistory.com/5> [한량 개발자]
+
+
+
+> mgmt: 
+>
+> ```yml
+> // lombok
+> compileOnly('org.projectlombok:lombok')
+> annotationProcessor('org.projectlombok:lombok')
+> ```
+
+> ```java
+> import lombok.Data;
+> 
+> @Data
+> public class DeviceControlObject {
+>     private String oid;
+>     private String value;
+>     // SMI syntax
+>     private int type;
+> }
+> ```
+
+
+
+마지막으로 표준 Java Bean 특성 만 고려되며 정적 특성에 대한 바인딩은 지원되지 않습니다.
+
+<br>
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| [@Value와 @ConfigurationProperties의 차이점](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-vs-value) 참조하십시오 . |
+
+또한 다음 예와 같이 `@EnableConfigurationProperties` 주석 에 등록 할 속성 클래스를 나열해야합니다 .
+
+```java
+@Configuration
+@EnableConfigurationProperties(AcmeProperties.class)
+public class MyConfiguration {
+}
+```
+
+> @EnableConfigurationProperties는 해당 클래스를 빈으로 등록하고 프로퍼티 값을 할당한다.
+
+<br>
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 그런식으로 `@ConfigurationProperties`bean이 등록 되면, bean은 일반적인 이름인 `<prefix>-<fqn>`을 가진다. `<prefix>`는 `@ConfigurationProperties`주석에 명시된 환경 키 접두사 이고 `<fqn>`은 bean의 완전한 이름이다. 주석이 접두어를 제공하지 않으면 bean의 완전한 이름 만 사용됩니다. 위의 예제에서 bean 이름은 `acme-com.example.AcmeProperties`이다. |
+
+> @ConfigurationProperties(prefix = "spring.datasource.hikari")
+>
+> @ConfigurationProperties(prefix = "security")
+
+<br>
+
+> ```java
+> @ConfigurationProperties(prefix="mf.resource.ip-filter")
+> class IpFilter{
+> 
+> }
+> 
+> @EnableConfigurationProperties(IpFilter.class)
+> public class ResourceConfig extends ResourceServerConfigurerAdapter {
+> 
+> }
+> ```
+
+> ```java
+> @EnableConfigurationProperties(value = {ExtendedSecurityProperties.class})
+> public class SecurityConfig extends WebSecurityConfigurerAdapter {
+> }
+> ```
+
+
+
+위의 구성은  `AcmeProperties`에 대한 일반 bean을 작성합니다. `@ConfigurationProperties` 는 환경만을 다루고, 특히 컨텍스트에서 다른 빈을 주입하지 않는 것이 좋습니다 . 
+
+`@EnableConfigurationProperties`주석은 프로젝트에 자동으로 적용되어 `@ConfigurationProperties`로 주석 된 기존 Bean이  `Environment`에서 구성되도록 합니다.  `@EnableConfigurationProperties(AcmeProperties.class)` 로 `MyConfiguration`에 주석을 추가하는 대신, 다음 예제와 같이 `AcmeProperties` 을 Bean으로 만들 수 있습니다. :
+
+```java
+@Component
+@ConfigurationProperties(prefix="acme")
+public class AcmeProperties {
+
+	// ... see the preceding example
+
+}
+```
+
+이 구성 스타일은 `SpringApplication`외부 YAML 구성에서 특히 잘 작동합니다. (다음 예제참조)
+
+```yaml
+# application.yml
+
+acme:
+	remote-address: 192.168.1.1
+	security:
+		username: admin
+		roles:
+		  - USER
+		  - ADMIN
+
+# additional configuration as required
+```
+
+`@ConfigurationProperties` 빈을 사용하여 작업하려면, 다음 예제와 같이 다른 빈과 같은 방법으로 그것들을 삽입 할 수 있습니다 :
+
+```java
+@Service
+public class MyService {
+
+	private final AcmeProperties properties;
+
+	@Autowired
+	public MyService(AcmeProperties properties) {
+	    this.properties = properties;
+	}
+
+ 	//...
+
+	@PostConstruct
+	public void openConnection() {
+		Server server = new Server(this.properties.getRemoteAddress());
+		// ...
+	}
+
+}
+```
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| `@ConfigurationProperties`을 사용하면 IDE가 자신의 키에 대한 자동 완성을 제공하는 데 사용할 수있는 메타 데이터 파일을 생성 할 수 있습니다. 자세한 내용은 [부록 B, 구성 메타 데이터](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#configuration-metadata) 부록을 참조하십시오. |
+
+<br>
+
+##### 24.8.1  Third-party Configuration
+
+ `@ConfigurationProperties` 를 사용하여 클래스에 주석을 추가하는 것은 물론, public `@Bean`  메소드에서도 사용할 수 있습니다. 이렇게하면 컨트롤 외부에있는 third-party components에 properties을 바인딩하려는 경우 특히 유용 할 수 있습니다.
+
+`Environment`특성 에서 Bean을 구성하려면 `@ConfigurationProperties`를 다음 예와 같이 Bean 등록에 추가하십시오 .
+
+```java
+@ConfigurationProperties(prefix = "another")
+@Bean
+public AnotherComponent anotherComponent() {
+	...
+}
+```
+
+`another`접두어로 정의 된 모든 특성은 앞의 `AcmeProperties`예제 와 유사한 방식으로 해당   `AnotherComponent` Bean에 맵핑 됩니다.
+
+<br>
+
+##### 24.8.2 느슨한 바인딩
+
+Spring Boot는 `@ConfigurationProperties` bean에 `Environment`속성을 바인딩 할 때 다소 완화 된 규칙을 사용하므로 `Environment`속성 이름과 bean 속성 이름이 완전히 일치 할 필요는 없습니다. 이 기능이 유용한 일반적인 예로는 대시로 구분 된 환경 속성 (예 : `context-path`가 `contextPath`에 바인딩 됨)과 대문자로 된 환경 속성 (예 : `PORT`가 `port`에 바인딩 됨)이 있습니다.
+
+예를 들어 다음 `@ConfigurationProperties`클래스를 생각해보십시오 .
+
+```java
+@ConfigurationProperties(prefix="acme.my-project.person")
+public class OwnerProperties {
+
+	private String firstName;
+
+	public String getFirstName() {
+		return this.firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+}
+```
+
+앞의 예제에서 다음 속성 이름을 모두 사용할 수 있습니다.
+
+
+
+###### 표 24.1. 느슨한 바인딩
+
+| 재산                                | 노트                                                         |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `acme.my-project.person.first-name` | 케밥 (Kebab) 케이스 . 파일 `.properties`과 `.yml`파일 에 사용하는 것이 좋습니다 . |
+| `acme.myProject.person.firstName`   | 표준 camel 케이스 구문.                                      |
+| `acme.my_project.person.first_name` | 밑줄표기법. `.properties`및 `.yml` 파일에서 사용하기 위한 대체 형식 입니다. |
+| `ACME_MYPROJECT_PERSON_FIRSTNAME`   | 시스템 환경 변수를 사용할 때 권장되는 대문자 형식.           |
+
+
+
+
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| `prefix`주석의 값 은 kebab case여야합니다* (소문자로 구분되고 `-`로 구분 됨. 예: `acme.my-project.person`). |
+
+
+
+###### 표 24.2. 속성 소스 당 바인딩 규칙 완화
+
+| 부동산 출처 | 단순한                                                       | 명부                                                         |
+| ----------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 속성 파일   | 카멜 케이스, 케밥 케이스 또는 밑줄 표기법                    | `[ ]`또는 쉼표로 구분 된 값을 사용하는 표준 목록 구문        |
+| YAML 파일   | 카멜 케이스, 케밥 케이스 또는 밑줄 표기법                    | 표준 YAML 목록 구문 또는 쉼표로 구분 된 값                   |
+| 환경 변수   | 분리 문자로 밑줄이있는 대문자 형식입니다. `_`속성 이름 내에서 사용해서는 안됩니다. | 밑줄로 둘러싼 숫자 값 (예 : `MY_ACME_1_OTHER = my.acme[1].other`) |
+| 시스템 속성 | 카멜 케이스, 케밥 케이스 또는 밑줄 표기법                    | `[ ]`또는 쉼표로 구분 된 값을 사용하는 표준 목록 구문        |
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| 가능한 경우 속성을 `my.property-name=acme`같은 소문자 kebab 형식으로 저장하는 것이 좋습니다. |
+
+
+
+`Map`속성에 바인딩 할 때 `key`에 소문자 영숫자가 또는 `-`이 아닌 다른 문자 가 포함 된 경우 대괄호 표기법을 사용하여 원래 값을 유지해야합니다. 키가 `[]`로  둘러싸여 있지 않으면 영숫자가 아니거나 `-`가 아닌 문자는 모두 제거됩니다. 예를 들어 다음 속성을 `Map`에 바인딩하는 것을 고려하십시오 .
+
+```yaml
+acme:
+  map:
+    "[/key1]": value1
+    "[/key2]": value2
+    /key3: value3
+```
+
+위의 속성은   `/key1`, `/key2`그리고 `key3`가 `Map`의 키로 바인딩 됩니다.
+
+
+
+##### 24.8.3 복합 유형(Complex Types) 병합
+
+목록이 둘 이상의 장소에서 구성된 경우 전체 목록을 대체하여 우선 적용됩니다.
+
+예를 들어 기본적으로`null`인  `name` 및 `description`속성이 있는 `MyPojo`오브젝트가 있다고 가정합니다 . 다음 예제에서는`AcmeProperties` 의 `MyPojo` 객체 목록을 표시 합니다 .
+
+```java
+@ConfigurationProperties("acme")
+public class AcmeProperties {
+
+	private final List<MyPojo> list = new ArrayList<>();
+
+	public List<MyPojo> getList() {
+		return this.list;
+	}
+
+}
+```
+
+다음 구성을 고려하십시오.
+
+```yaml
+acme:
+  list:
+    - name: my name
+      description: my description
+---
+spring:
+  profiles: dev
+acme:
+  list:
+    - name: my another name
+```
+
+ `dev`프로파일이 활성화되지 않은 경우, `AcmeProperties.list`는 이전에 정의된 대로 하나의 `MyPojo` 항목을 포함합니다.  그러나 `dev` 프로파일을 사용 가능한 경우에는 `list` *여전히* 하나의 항목 (이름이 `my another name` 이고  `null`값인 설명) 만 포함됩니다. 이 구성은 두 번째 `MyPojo`인스턴스를 목록에 추가 하지 않으며 항목을 병합하지 않습니다.‌
+
+`List` 이 여러 프로파일에 지정 된 경우 우선 순위가 가장 높은 프로파일 (하나만 사용)이 사용됩니다. 다음 예제를 고려하십시오.
+
+```yaml
+acme:
+  list:
+    - name: my name
+      description: my description
+    - name: another name
+      description: another description
+---
+spring:
+  profiles: dev
+acme:
+  list:
+    - name: my another name
+```
+
+앞의 예에서, 만약 `dev `프로파일이 활성화되어있으면, `AcmeProperties.list`에 하나의  `MyPojo` 항목이 포함되어있습니다.(이름 `my another name` 이고, 설명 값은 `null`).  YAML의 경우 쉼표로 구분 된 목록과 YAML 목록을 모두 사용하여 목록의 내용을 완전히 오버라이딩 할 수 있습니다.
+
+ `Map` 속성의 경우, 당신은 여러 소스에서 가져온 속성 값으로 바인딩 할 수 있습니다. 그러나 여러 소스에서 동일한 속성의 경우 우선 순위가 가장 높은 속성이 사용됩니다. 다음 예제에서는`AcmeProperties` 의  `Map<String, MyPojo>`을 노출합니다.
+
+```java
+@ConfigurationProperties("acme")
+public class AcmeProperties {
+
+	private final Map<String, MyPojo> map = new HashMap<>();
+
+	public Map<String, MyPojo> getMap() {
+		return this.map;
+	}
+
+}
+```
+
+다음 구성을 고려하십시오.
+
+```yaml
+acme:
+  map:
+    key1:
+      name: my name 1
+      description: my description 1
+---
+spring:
+  profiles: dev
+acme:
+  map:
+    key1:
+      name: dev name 1
+    key2:
+      name: dev name 2
+      description: dev description 2
+```
+
+`dev`프로파일이 활성화되지 않은 경우,  `AcmeProperties.map` 에는 `key1`  키가 있는 항목이 하나 있습니다 (이름이  `my name 1`  설명이  `my description 1` 인 항목). 
+
+그러나  `dev`  프로필을 사용하는 경우 `map` 에는 키가  `key1`  (이름이  `dev name 1` 이고 설명이  `my description 1`)과 `key2`가 있습니다 (이름이  `dev name 2` 이고 설명이 `dev description 2`인 항목) 인 두 개의 항목이 있습니다. 
+
+
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 위의 병합 규칙은 YAML 파일뿐만 아니라 모든 속성 소스의 속성에도 적용됩니다. |
+
+
+
+##### 24.8.4 Properties Conversion
+
+스프링 부트는 `@ConfigurationProperties`빈에 바인딩 할 때 외부 애플리케이션 특성을 올바른 유형으로 강제 변환하려고 시도합니다 . 사용자 정의 유형 변환이 필요한 경우 `ConversionService`bean (bean 이름 지정 `conversionService`) 또는 사용자 정의 특성 편집기 ( `CustomEditorConfigurer`bean을 통한 ) 또는 custom `Converters`(bean 정의가  `@ConfigurationPropertiesBinding`로 주석 된)을 제공 할 수 있습니다.
+
+
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 이 빈은 애플리케이션 라이프 사이클 중 매우 일찍 요청되므로 사용중인 의존성을 제한하십시오 `ConversionService`. 일반적으로 필요한 종속성은 작성시 완전히 초기화되지 않을 수 있습니다. `ConversionService`구성 키 강제 변환에 필요하지 않은 경우 사용자 지정 이름의 이름을 바꾸고 자격이있는 사용자 지정 변환기에만 의존 할 수 `@ConfigurationPropertiesBinding`있습니다. |
+
+
+
+###### **기간 변환**
+
+스프링 부트 (Spring Boot)는 지속 시간 표현을위한 전용 지원을 제공합니다. `java.time.Duration`속성 을 공개하면 응용 프로그램 속성에서 다음 형식을 사용할 수 있습니다.
+
+- 일반 `long`표현 (a `@DurationUnit`가 지정 되지 않은 경우 기본 단위로 밀리 초 사용 )
+- 에 [의해 사용 된 ](https://docs.oracle.com/javase/8/docs/api//java/time/Duration.html#parse-java.lang.CharSequence-)표준 ISO-8601 형식 [`java.time.Duration`](https://docs.oracle.com/javase/8/docs/api//java/time/Duration.html#parse-java.lang.CharSequence-)
+- 값과 단위가 결합 된 더 읽기 쉬운 형식 (예 : `10s`10 초를 의미)
+
+다음 예제를 고려하십시오.
+
+```java
+@ConfigurationProperties("app.system")
+public class AppSystemProperties {
+
+	@DurationUnit(ChronoUnit.SECONDS)
+	private Duration sessionTimeout = Duration.ofSeconds(30);
+
+	private Duration readTimeout = Duration.ofMillis(1000);
+
+	public Duration getSessionTimeout() {
+		return this.sessionTimeout;
+	}
+
+	public void setSessionTimeout(Duration sessionTimeout) {
+		this.sessionTimeout = sessionTimeout;
+	}
+
+	public Duration getReadTimeout() {
+		return this.readTimeout;
+	}
+
+	public void setReadTimeout(Duration readTimeout) {
+		this.readTimeout = readTimeout;
+	}
+
+}
+```
+
+30 초의 세션 타임 아웃을 지정하려면 `30`, `PT30S`그리고 `30s`모두 동일합니다. 은 500ms의 읽기 시간 제한은 다음 형식 중 하나로 지정할 수 있습니다 `500`, `PT0.5S`그리고 `500ms`.
+
+지원되는 유닛을 사용할 수도 있습니다. 이것들은:
+
+- `ns` 나노 초 동안
+- `us` 마이크로 초 동안
+- `ms` 밀리 초 동안
+- `s` 초 동안
+- `m` 분 동안
+- `h` 몇 시간 동안
+- `d` 몇일 동안
+
+기본 단위는 밀리 초이며 `@DurationUnit`위 샘플에서 설명한대로 재정의 할 수 있습니다 .
+
+
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| `Long`기간을 표현하기 위해 단순히 사용하는 이전 버전에서 업그레이드하는 `@DurationUnit`경우 스위치 옆에 밀리 초가 아닌 경우 단위 (사용 ) 를 정의해야 합니다 `Duration`. 이렇게하면 훨씬 더 풍부한 형식을 지원하면서 투명한 업그레이드 경로가 제공됩니다. |
+
+
+
+###### 데이터 크기 변환
+
+Spring Framework는 `DataSize`크기를 바이트 단위로 표현할 수 있는 값 유형을 가지고 있습니다. `DataSize`속성 을 공개하면 응용 프로그램 속성에서 다음 형식을 사용할 수 있습니다.
+
+- 정규 `long`표현 (a `@DataSizeUnit`가 지정되어 있지 않은 한 바이트를 기본 단위로 사용 )
+- 값과 단위가 결합 된 더 읽기 쉬운 형식 (예 : `10MB`10 메가 바이트를 의미)
+
+다음 예제를 고려하십시오.
+
+```java
+@ConfigurationProperties("app.io")
+public class AppIoProperties {
+
+	@DataSizeUnit(DataUnit.MEGABYTES)
+	private DataSize bufferSize = DataSize.ofMegabytes(2);
+
+	private DataSize sizeThreshold = DataSize.ofBytes(512);
+
+	public DataSize getBufferSize() {
+		return this.bufferSize;
+	}
+
+	public void setBufferSize(DataSize bufferSize) {
+		this.bufferSize = bufferSize;
+	}
+
+	public DataSize getSizeThreshold() {
+		return this.sizeThreshold;
+	}
+
+	public void setSizeThreshold(DataSize sizeThreshold) {
+		this.sizeThreshold = sizeThreshold;
+	}
+
+}
+```
+
+10메가바이트의 버퍼 크기를 지정하려면 `10`와 `10MB`동일합니다. 256 바이트의 크기 임계 값은 `256`또는 로 지정할 수 있습니다 `256B`.
+
+지원되는 유닛을 사용할 수도 있습니다. 이것들은:
+
+- `B` 바이트
+- `KB` 킬로바이트
+- `MB` 메가 바이트
+- `GB` 기가 바이트
+- `TB` 테라 바이트
+
+
+
+기본 단위는 바이트이며 `@DataSizeUnit`위 샘플에서 설명한대로 재정의 할 수 있습니다 .
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| 단순히 `Long`크기를 표현하는 데 사용하는 이전 버전에서 업그레이드하는 `@DataSizeUnit`경우 스위치 옆에 바이트가 없으면 단위 (사용 ) 를 정의해야 합니다 `DataSize`. 이렇게하면 훨씬 더 풍부한 형식을 지원하면서 투명한 업그레이드 경로가 제공됩니다. |
+
+
+
+##### 24.8.5 @ConfigurationProperties 유효성 검사
+
+Spring Boot는 `@ConfigurationProperties`Spring의 `@Validated`주석으로 주석 이 추가 될 때마다 클래스의 유효성 검사를 시도합니다 . `javax.validation` 구성 클래스에서 JSR-303 제약 주석을 직접 사용할 수 있습니다 . 이렇게하려면 다음 예와 같이 호환되는 JSR-303 구현이 클래스 경로에 있는지 확인한 다음 필드에 제약 조건 주석을 추가하십시오.
+
+```java
+@ConfigurationProperties(prefix="acme")
+@Validated
+public class AcmeProperties {
+
+	@NotNull
+	private InetAddress remoteAddress;
+
+	// ... getters and setters
+
+}
+```
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| `@Bean`구성 등록 정보를 작성하는 메소드 에 주석을 달아 검증을 트리거 할 수도 있습니다 `@Validated`. |
+
+바운드 될 때 중첩 된 속성도 유효성이 검사되지만 연관된 필드에도 주석을 추가하는 것이 좋습니다 `@Valid`. 이렇게하면 중첩 된 속성이없는 경우에도 유효성 검사가 트리거됩니다. 다음 예제는 앞의 `AcmeProperties`예제 를 기반으로합니다 .
+
+
+
+```java
+@ConfigurationProperties(prefix="acme")
+@Validated
+public class AcmeProperties {
+
+	@NotNull
+	private InetAddress remoteAddress;
+
+	@Valid
+	private final Security security = new Security();
+
+	// ... getters and setters
+
+	public static class Security {
+
+		@NotEmpty
+		public String username;
+
+		// ... getters and setters
+
+	}
+
+}
+```
+
+
+
+또한 `Validator`호출 된 bean 정의를 생성하여 커스텀 Spring 을 추가 할 수있다 `configurationPropertiesValidator`. `@Bean`방법을 선언해야합니다 `static`. 구성 등록 정보 유효성 검사기는 응용 프로그램의 수명주기 초기에 만들어지며 `@Bean`메서드를 정적으로 선언 하면 `@Configuration`클래스 를 인스턴스화하지 않고도 Bean을 만들 수 있습니다 . 이렇게하면 초기 인스턴스 생성으로 인해 발생할 수있는 문제를 피할 수 있습니다. 이 [속성 검증 샘플](https://github.com/spring-projects/spring-boot/tree/v2.1.5.RELEASE/spring-boot-samples/spring-boot-sample-property-validation) 물건을 설정하는 방법을 보여줍니다.
+
+
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| `spring-boot-actuator`모듈은 모든 노출 엔드 포인트 포함 `@ConfigurationProperties`콩. 웹 브라우저 `/actuator/configprops`에서 해당 JMX 엔드 포인트 를 가리 키 거나 사용하십시오. 자세한 내용은 " [프로덕션 준비 기능](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready-endpoints) "단원을 참조하십시오. |
+
+
+
+##### 24.8.6 @ConfigurationProperties 대 @Value
+
+`@Value`주석은 핵심 컨테이너 기능이며, 형태 보증 된 구성 속성과 동일한 기능을 제공하지 않습니다. 다음 표는 `@ConfigurationProperties`및에서 지원되는 기능을 요약 한 것입니다 `@Value`.
+
+
+
+| 특색                                                         | `@ConfigurationProperties` | `@Value` |
+| ------------------------------------------------------------ | -------------------------- | -------- |
+| [편안한 바인딩](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-relaxed-binding) | 예                         | 아니     |
+| [메타 데이터 지원](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#configuration-metadata) | 예                         | 아니     |
+| `SpEL` 평가                                                  | 아니                       | 예       |
+
+
+
+자신의 구성 요소에 대한 구성 키 세트를 정의한 경우 주석이 달린 POJO로 그룹화하는 것이 좋습니다 `@ConfigurationProperties`. 또한 `@Value`느슨한 바인딩을 지원하지 않으므로 환경 변수를 사용하여 값을 제공해야하는 경우에는 적합하지 않습니다.
+
+마지막으로 `SpEL`표현식을 작성할 수있는 동안 `@Value`이러한 표현식은 [애플리케이션 특성 파일](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-application-property-files) 에서 처리되지 않습니다 .
+
+## 
+
+### 25. 프로파일 by ks
+
+스프링 프로파일은 응용 프로그램 구성의 일부를 분리하여 특정 환경에서만 사용할 수 있도록하는 방법을 제공합니다. 다음과 같이 임의의 `@Component`또는 `@Configuration` 을 표시하여 `@Profile`로드 될 때를 제한 할 수 있습니다 .
+
+> @Profile을 사용하는 경우 : dev와 live의 설정이 달라야 하는 경우 프로파일 단위로 세분화해서 관리한다.
+>
+> 운영체제 레벨에서 환경변수를 SPRING_PROFILE_ACTIVE=dev 로 설정하면 별도로 옵션을 주지 않아도 해당 운영체제에서 동작한다. 그게 아니라면 실행단계에서 java -jar -Dspring.profiles.active-dev로 설정해서 실행한다.
+>
+> 출처 :  [https://effectivesquid.tistory.com/entry/Spring-boot-profile-%EC%A0%81%EC%9A%A9%ED%95%98%EA%B8%B0](https://effectivesquid.tistory.com/entry/Spring-boot-profile-적용하기)
+>
+> <https://jsonobject.tistory.com/220>
+
+<br>
+
+```
+@Configuration 
+@Profile ( "production")
+ public  class ProductionConfiguration {
+
+	// ...
+
+}
+```
+
+`spring.profiles.active` `Environment`속성을 사용하여 활성화 된 프로필을 지정할 수 있습니다 . 이 장의 앞부분에서 설명한 방법으로 속성을 지정할 수 있습니다. 예를 들어, `application.properties`에 다음 예와 같이 포함시킬 수 있습니다 .
+
+```
+spring.profiles.active = dev, hsqldb
+```
+
+다음 스위치를 사용하여 명령 줄에서 지정할 수도 있습니다 `--spring.profiles.active=dev,hsqldb`.
+
+
+
+#### 25.1 Active 프로파일 더하기
+
+이 `spring.profiles.active`속성은 다른 속성과 동일한 순서 규칙을 따릅니다 : 가장 우선 순위가 높은  `PropertySource`가 이깁니다. 즉, application.properties에서 활성 프로파일(active profile)을 지정하고, 다음 명령 행 스위치를 사용하여 **대체 할** 수 있습니다.
+
+
+
+> 지정하지 않으면 default 프로퍼티를 쓰고, 지정하면 값이override된다
