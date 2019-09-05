@@ -1490,7 +1490,7 @@ public class AcmeProperties {
 
 마지막으로 `SpEL`표현식을 작성할 수있는 동안 `@Value`이러한 표현식은 [애플리케이션 특성 파일](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config-application-property-files) 에서 처리되지 않습니다 .
 
-## <br>
+<br>
 
 ### 25. 프로파일 by ks
 
@@ -3004,7 +3004,7 @@ spring.webflux.static-path-pattern=/resources/**
 | ------------------------------------------------------------ |
 | **Spring WebFlux 응용 프로그램은 Servlet API에 엄격하게 의존하지 않으므로 war 파일로 배포 할 수 없으며** **src/main/webapp directory를 사용하지 않습니다.** |
 
-### <br>
+<br>
 
 ##### 29.2.4 템플릿 엔진 
 
@@ -3112,7 +3112,7 @@ src/
              +- <other templates>
 ```
 
-###  <br>
+<br>
 
 ##### 29.2.6 Web Filters
 
@@ -3438,3 +3438,605 @@ Setter는 많은 구성 옵션에 대해 제공됩니다. 좀 더 이국적인 �
 [WebClient Runtime section](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-webclient-runtime)에서 클라이언트 측의 리소스 구성에 대해 자세히 배울 수 있습니다. 
 
 <br>
+
+### 30. Security by ys
+
+[Spring Security](https://projects.spring.io/spring-security/) 가 classpath 상에 있다면 , 웹 애플리케이션은 기본적으로 보안이 유지됩니다. Spring Boot는 스프링 시큐리티의 내용 협상 전략에 의존하여  `httpBasic`나 `formLogin`를 사용할지 여부를 결정합니다 . 
+
+>  security.and()
+>          .formLogin()
+>          .and()
+>          .httpBasic();
+>
+> .formLogin() :  폼을 통한 로그인을 이용한다
+>
+> .httpBasic() : HTTP 요청에 다음 헤더가 채워지도록하여 HTTP Basic을 사용하여 사용자 이름이 "user"이고 비밀번호가 "password"인 사용자를 인증한다.
+
+<br>
+
+웹 응용 프로그램에 메서드 수준 보안을 추가하려면 `@EnableGlobalMethodSecurity`을 추가하여 원하는 설정을 추가 할 수도 있습니다 . 추가 정보는 [Spring Security Reference Guide](https://docs.spring.io/spring-security/site/docs/5.1.5.RELEASE/reference/htmlsingle#jc-method) 에서 찾을 수 있습니다 .
+
+> ‌@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
+>
+> jsr250Enabled : true로 설정되면, 포인트 커트는 영향을 받고, @RolesAllowed로 애너테이션 된 메소드는 스프링 시큐리티의 애스펙트로 감쌀 수 있다.
+
+> securedEnabled : true로 설정하면 @Secured를 메소드를 사용할 수 있다. 
+>
+> - \- @Secured("ROLE_ADMIN") , @Secured({"ROLE_ADMIN","ROLE_USER"})
+> - \- 비인가자 접근 시 AccessDeniedException 던짐 
+> - *역할 단위로 제약조건을 지정할 수 있음을 알 수 있습니다.*
+>
+> prePostEnabled : true로 설정하면 @PreAuthorize, @PostAuthorize 메소드를 사용할 수 있다. 
+>
+> - \- @PreAuthorize("hasRole('ADMIN')")
+>
+> @PostAuthorize : 위와 동일
+>
+> 출처: 
+>
+> https://coding-start.tistory.com/153
+>
+> <https://okky.kr/article/382738>
+>
+> <https://springbootdev.com/2017/08/30/difference-between-secured-rolesallowed-and-preauthorizepostauthorize/> << 예가 많음. 
+>
+> <@Secured 와 @PreAuthroize의 차이점>
+>
+> 1. @Secured와 @PreAuthorize의 주요 차이점은 @PreAuthorize가 Spring EL에서 작동 할 수 있다는 것입니다.
+> 2. @PreAuthorize를 사용하면서 @Secured를 사용하지 않고 SecurityExpressionRoot의 메소드 및 속성에 액세스 할 수 있습니다.
+> 3. @Secured를 사용하면 정적 규칙 만 확인할 수 있지만 @PreAuthorize 주석을 사용하면 정적 및 동적 표현식을 모두 사용하여 조건을 일치시킬 수 있습니다.
+>
+> 
+>
+> @Secured는 표현식 사용할 수 없고
+>
+> @PreAuthroize는 표현식 사용 가능
+>
+> @Secured({"ROLE_USER","ROLE_ADMIN"}) => OR 조건, AND 조건 불가능
+>
+> @PreAuthorize("hasRole('ROLE_USER') and hasRole('ROLE_ADMIN')") => and 조건, or 조건 모두 가능
+>
+> 출처: https://ggotae.tistory.com/entry/Secured-PreAuthorize-비교 [암초보]
+>
+> 
+
+<br>
+
+기본값 `UserDetailsService`은 단일 사용자입니다. 다0음 예제와 같이 사용자 이름은 `user`이고, 암호는 무작위이며 **응용 프로그램이 시작될 때 INFO 수준에서 인쇄됩니다.**
+
+```
+Using generated security password: 78fa095d-3f4c-48b1-ad50-e24c31d5cf35
+```
+
+| ![[Note]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 로깅 구성을 세부적으로 조정하는 경우 `org.springframework.boot.autoconfigure.security`카테고리가 로깅 `INFO`메시지로 설정되어 있는지 확인하십시오 . 그렇지 않으면 기본 암호가 인쇄되지 않습니다. |
+
+‌당신은 `spring.security.user.name`와 `spring.security.user.password`을  제공함으로써 사용자 이름과 암호를 변경할 수 있습니다
+
+<br>
+
+기본적으로 웹 응용 프로그램에서 기본적으로 제공하는 기능은 다음과 같습니다.
+
+‌<br>
+
+- 메모리 내 저장소가있는  `UserDetailsService`(또는 `ReactiveUserDetailsService`WebFlux 응용 프로그램의 경우) bean과 생성 된 암호가있는 단일 사용자 ( [`SecurityProperties.User`](https://docs.spring.io/spring-boot/docs/2.1.5.RELEASE/api/org/springframework/boot/autoconfigure/security/SecurityProperties.User.html) 사용자 속성 참조 ).
+- 전체 애플리케이션 (actuator가 클래스 경로에있는 경우 actuator 끝점 포함)에 대한 양식 기반 로그인 또는 HTTP 기본 보안 ( 요청 `Accept`의 헤더에 따라 다름 ).
+- 인증 이벤트 게시를위한 `DefaultAuthenticationEventPublisher` .
+
+‌<br>
+
+당신은  bean을 추가함으로써 다른 `AuthenticationEventPublisher`을 제공 할 수 있다.
+
+<br>
+
+#### 30.1 MVC 보안
+
+기본 보안 구성 `SecurityAutoConfiguration`및`UserDetailsServiceAutoConfiguration`에서 구현됩니다. 
+
+![img](https://blobscdn.gitbook.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-LWdhssr0w9IqAHmA-ke%2F-LgKcONdLMESDhlvOCRA%2F-LgKcnxTGI-EfrD-rKkS%2Fimage.png?alt=media&token=ea7b59ed-7c00-4406-a8c7-06c567854ed4)
+
+‌<br>
+
+`SecurityAutoConfiguration`은 웹 보안을 위해 `SpringBootWebSecurityConfiguration` 가져오고 `UserDetailsServiceAutoConfiguration`은 인증을 구성합니다. 이는  웹 이외의 응용 프로그램과도 관련이 있습니다. 기본 웹 응용 프로그램 보안 구성을 완전히 해제하려면 `WebSecurityConfigurerAdapter`유형의 빈을 추가하면됩니다 ( 그렇게 하면 `UserDetailsService`구성 또는 액추에이터의 보안이 비활성화되지 않음 ).
+
+<br>
+
+또한, `UserDetailsService`구성을 해제하려면 , 당신은`UserDetailsService`, `AuthenticationProvider`또는 `AuthenticationManager` 유형의 bean을 추가 할 수 있습니다. [스프링 부트 샘플](https://github.com/spring-projects/spring-boot/tree/v2.1.5.RELEASE/spring-boot-samples/) 에는 몇 가지 보안 애플리케이션이있어 일반적인 유스 케이스로 시작할 수있다.
+
+<br>
+
+**유스 케이스**(**Use case**) 는 UML(통합 모델링 언어)의 행위자(액터)와 액터가 요구하여 시스템이 수행하는 일의 목표이다.
+
+‌<br>
+
+액세스 규칙은 `WebSecurityConfigurerAdapter`을 추가하여 사용자 지정을 재정의 할 수 있습니다 . 스프링 부트는 액츄에이터 끝점 및 정적 리소스에 대한 액세스 규칙을 무시하는 데 사용할 수있는 편리한 방법을 제공합니다. `EndpointRequest`를 사용하여 `management.endpoints.web.base-path` 의 속성을 기반으로 하는 `RequestMatcher`를 만드는 데 사용할 수 있습니다 . `PathRequest`는 일반적으로 사용되는 위치에 리소스 를 만들 때 사용할 수 있습니다.
+
+‌<br>
+
+#### 30.2 WebFlux 보안
+
+Spring MVC 애플리케이션과 마찬가지로, `spring-boot-starter-security`종속성 을 추가하여 WebFlux 애플리케이션을 보호 할 수 있습니다 . 기본 보안 구성은 `ReactiveSecurityAutoConfiguration`및`UserDetailsServiceAutoConfiguration`에서 구현 됩니다. `ReactiveSecurityAutoConfiguration`은 웹 보안을 위해 `WebFluxSecurityConfiguration` 가져오고 `UserDetailsServiceAutoConfiguration `인증을 구성하며 비 웹 응용 프로그램과도 관련이 있습니다. 기본 웹 응용 프로그램 보안 구성을 완전히 끄려면 `WebFilterChainProxyUserDetailsService `유형의 빈을 추가하면됩니다 ( 구성 또는 액추에이터의 보안이 비활성화되지 않음 ).
+
+<br>
+
+또한 `UserDetailsService`설정을 끄려면, `ReactiveUserDetailsService`또는 `ReactiveAuthenticationManager` 타의 빈을 추가 할 수 있습니다.
+
+‌<br>
+
+액세스 규칙은 사용자 지정 `SecurityWebFilterChain`을 추가하여 구성 할 수 있습니다. 스프링 부트는 액츄에이터 끝점 및 정적 리소스에 대한 액세스 규칙을 무시하는 데 사용할 수있는 편리한 방법을 제공합니다. `EndpointRequest`을 사용하여 `management.endpoints.web.base-path`속성을 기반으로 하는 `ServerWebExchangeMatcher`를 작성할 수 있습니다.
+
+<br>
+
+`PathRequest`는 일반적으로 사용되는 위치의 리소스에 대한 `ServerWebExchangeMatcher` 를 만드는데 사용할 수 있습니다 .
+
+‌<br>
+
+예를 들어, 다음과 같이 추가하여 보안 구성을 사용자 정의 할 수 있습니다.
+
+```java
+@Bean
+public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+	return http
+		.authorizeExchange()
+			.matchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+			.pathMatchers("/foo", "/bar")
+				.authenticated().and()
+			.formLogin().and()
+		.build();
+}
+```
+
+<br>
+
+#### 30.3 OAuth2
+
+[OAuth2](https://oauth.net/2/) 는 Spring에서 지원하는 널리 사용되는 인증 프레임 워크입니다.
+
+##### 30.3.1 클라이언트
+
+만약 너의 클래스 패스에 `spring-security-oauth2-client`가 있다면 자동 구성 기능을 활용하여 OAuth2 / Open ID Connect 클라이언트를 쉽게 설정할 수 있습니다. 이 구성은 `OAuth2ClientProperties`아래의 속성을 사용합니다. 동일한 속성이 서블릿 및 리 액티브 응용 프로그램에 모두 적용됩니다.
+
+다음 예와 같이 `spring.security.oauth2.client`접두사 아래에 여러 OAuth2 클라이언트 및 공급자를 등록 할 수 있습니다.
+
+```
+spring.security.oauth2.client.registration.my-client-1.client-id=abcd
+spring.security.oauth2.client.registration.my-client-1.client-secret=password
+spring.security.oauth2.client.registration.my-client-1.client-name=Client for user scope
+spring.security.oauth2.client.registration.my-client-1.provider=my-oauth-provider
+spring.security.oauth2.client.registration.my-client-1.scope=user
+spring.security.oauth2.client.registration.my-client-1.redirect-uri-template=https://my-redirect-uri.com
+spring.security.oauth2.client.registration.my-client-1.client-authentication-method=basic
+spring.security.oauth2.client.registration.my-client-1.authorization-grant-type=authorization_code
+
+
+spring.security.oauth2.client.registration.my-client-2.client-id=abcd
+spring.security.oauth2.client.registration.my-client-2.client-secret=password
+spring.security.oauth2.client.registration.my-client-2.client-name=Client for email scope
+spring.security.oauth2.client.registration.my-client-2.provider=my-oauth-provider
+spring.security.oauth2.client.registration.my-client-2.scope=email
+spring.security.oauth2.client.registration.my-client-2.redirect-uri-template=https://my-redirect-uri.com
+spring.security.oauth2.client.registration.my-client-2.client-authentication-method=basic
+spring.security.oauth2.client.registration.my-client-2.authorization-grant-type=authorization_code
+
+
+spring.security.oauth2.client.provider.my-oauth-provider.authorization-uri=http://my-auth-server/oauth/authorize
+spring.security.oauth2.client.provider.my-oauth-provider.token-uri=http://my-auth-server/oauth/token
+spring.security.oauth2.client.provider.my-oauth-provider.user-info-uri=http://my-auth-server/userinfo
+spring.security.oauth2.client.provider.my-oauth-provider.user-info-authentication-method=header
+spring.security.oauth2.client.provider.my-oauth-provider.jwk-set-uri=http://my-auth-server/token_keys
+spring.security.oauth2.client.provider.my-oauth-provider.user-name-attribute=name
+```
+
+[OpenID Connect 검색](https://openid.net/specs/openid-connect-discovery-1_0.html) 을 지원하는 OpenID Connect 제공 업체의 경우 구성을 더욱 단순화 할 수 있습니다. 공급자는 Issuer Identifier로 주장하는 URI 인 `issuer-uri`로 구성해야합니다 . 예를 들어, `issuer-uri`가 "https://example.com"이면 `OpenID Provider Configuration Request` 는 "https://example.com/.well-known/openid-configuration"이됩니다. 그 `OpenID Provider Configuration Response`결과는 다음과 같을 것으로 예상됩니다 . 다음 예제는 `issuer-uri`로 OpenID Connect Provider를 다음과 같이 구성하는 방법을 보여줍니다 .
+
+```xml
+spring.security.oauth2.client.provider.oidc-provider.issuer-uri = https : //dev-123456.oktapreview.com/oauth2/default/
+```
+
+기본적으로 스프링 시큐리티는 `OAuth2LoginAuthenticationFilter`는 오직 `/login/oauth2/code/*`와 일치하는 URL 만 처리합니다.다른 패턴을 사용 하도록  `redirect-uri`를 사용자 정의하려는 경우 해당 사용자 정의 패턴을 처리하기위한 구성을 제공해야합니다. 예를 들어, 서블릿 응용 프로그램의 경우 `WebSecurityConfigurerAdapter`같은 자신 만의 응용 프로그램을 추가 할 수 있습니다 .
+
+<br>
+
+```java
+public class OAuth2LoginSecurityConfig extends WebSecurityConfigurerAdapter {
+
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http
+			.authorizeRequests()
+				.anyRequest().authenticated()
+				.and()
+			.oauth2Login()
+				.redirectionEndpoint()
+					.baseUri("/custom-callback");
+	}
+}
+```
+
+<br>
+
+**일반 공급 업체를위한 OAuth2 클라이언트 등록**
+
+구글, Github에서, 페이스 북, 그리고 Okta를 포함하여 일반적인 OAuth2를 및 오픈 ID 공급자, 제공업체의 경우 Google에서는 제공자 기본값 (`google`, `github`, `facebook`, 및 `okta`).을 제공합니다.
+
+<br>
+
+이러한 공급자를 사용자 지정할 필요가없는 경우 기본값을 유추해야하는 특성을 `provider`특성으로 설정할 수 있습니다 . 또한, 클라이언트 등록을위한 키가 기본 지원되는 프로 바이더와 일치하면 Spring Boot도 이를 추론합니다.
+
+즉, 다음 예제의 두 가지 구성은 Google 제공 업체를 사용합니다.
+
+<br>
+
+```
+spring.security.oauth2.client.registration.my-client.client-id = abcd
+spring.security.oauth2.client.registration.my-client.client-secret = password
+spring.security.oauth2.client.registration.my- client.provider = google
+
+
+spring.security.oauth2.client.registration.google.client-id = abcd
+spring.security.oauth2.client.registration.google.client-secret = password
+```
+
+<br>
+
+##### 30.3.2 자원 서버
+
+spring 부트는 다음 예제와 같이 JWK Set URI 또는 OIDC Issuer URI가 지정되어있는 한 `spring-security-oauth2-resource-server`를 설정할 수 있습니다.
+
+```
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri = https : //example.com/oauth2/default/v1/keys
+```
+
+```
+spring.security.oauth2.resourceserver.jwt.issuer-uri=https://dev-123456.oktapreview.com/oauth2/default/7
+```
+
+<br>
+
+서블릿 및 리 액티브 응용 프로그램 모두에 동일한 특성이 적용됩니다.
+
+또는 서블릿 애플리케이션 용으로 자체 `JwtDecoder`bean을 정의 하거나 반응 형 애플리케이션 용으로 `ReactiveJwtDecoder`bean을 정의 할 수 있습니다 .
+
+<br>
+
+##### 30.3.3 권한 부여 서버
+
+현재 스프링 시큐리티는 OAuth 2.0 인증 서버 구현을 지원하지 않습니다. 그러나이 기능은 [Spring Security OAuth](https://projects.spring.io/spring-security-oauth/) 프로젝트에서 사용할 수 있습니다.이 프로젝트는 결국 Spring Security로 완전히 대체 될 것입니다. 그때까지는 `spring-security-oauth2-autoconfigure` 모듈을 사용하여 OAuth 2.0 인증 서버를 쉽게 설정할 수 있습니다. 지침은 해당 [설명서](https://docs.spring.io/spring-security-oauth2-boot) 를 참조하십시오.
+
+<br>
+
+#### 30.4 Actuator 보안
+
+> ###### 그래서 Spring Boot Actuator란
+>
+> 간단히 말하자면 Spring Boot Application의 상태를 관리해준다.
+>
+> - Spring Boot Application의 상태 정보(health, properties, beans, 구동된 AutoConfiguration 목록 등)를 다룰 수 있도록 자동 설정.
+> - 각종 추상화 클래스(HealthIndicator 등)을 제공하여, 상태 정보를 변경할 수 있도록 Service를 제공.
+
+<br>
+
+보안을 위해, `/health`와는 `/info`이외의 모든 액추에이터는 기본적으로 비활성화되어 있습니다. `management.endpoints.web.exposure.include`속성을 사용하여 액추에이터를 활성화 할 수 있습니다.
+
+<br>
+
+Spring Security가 classpath에 있고 다른 WebSecurityConfigurerAdapter가없는 경우 / `/health` 및 `/info` 이외의 모든 액추에이터는 Spring Boot 자동 구성에 의해 보호됩니다. 사용자 정의 `WebSecurityConfigurerAdapter`를 정의하면 Spring Boot 자동 구성이 취소되고 액츄에이터 액세스 규칙을 완전히 제어하게됩니다.
+
+<br>
+
+| ![[Note]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| `management.endpoints.web.exposure.include`를 설정하기 전에, 노출 된 액추에이터가 중요한 정보를 포함하고 있지 않은지, 방화벽 뒤에 또는 스프링 보안과 같은 것으로 배치하여 보호되는지 확인하십시오. |
+
+<br>
+
+##### 30.4.1 교차 사이트 요청 위조 방지
+
+<br>
+
+스프링 부트는 스프링 시큐리티의 디폴트에 의존하기 때문에, CSRF 보호는 기본적으로 사용된다. 이것은 기본 보안 구성을 사용 중일 때는 `POST`(종료 및 로거 엔드 포인트), `PUT`또는 `DELETE`가 필요한 작동기 끝점에서 403 금지 오류가 발생합니다.
+
+<br>
+
+| ![[Note]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 브라우저가 아닌 클라이언트가 사용하는 서비스를 만드는 경우에만 CSRF 보호를 완전히 비활성화하는 것이 좋습니다.‌ |
+
+CSRF 보호에 대한 추가 정보는 [Spring Security Reference Guide](https://docs.spring.io/spring-security/site/docs/5.1.5.RELEASE/reference/htmlsingle#csrf) 에서 찾을 수있다 .
+
+<br>
+
+### 31.SQL 데이터베이스 작업 by ys
+
+[스프링 프레임 워크](https://projects.spring.io/spring-framework/)는 Hibernate와 같은 "객체 관계형 매핑"기술을 완성하기 위해 `JdbcTemplate`을 사용하는 JDBC 직접 액세스에서부터 SQL 데이터베이스 작업에 대한 광범위한 지원을 제공합니다. [Spring Data](https://projects.spring.io/spring-data/)는 인터페이스에서 직접 `Repository` 구현을 만들고 컨벤션을 사용하여 메서드 이름에서 쿼리를 생성하는 등의 추가 기능을 제공합니다.
+
+<br>
+
+#### 31.1 Configure a DataSource
+
+Java의 `javax.sql.DataSource`인터페이스는 데이터베이스 연결 작업의 표준 방법을 제공합니다. 전통적으로 'DataSource'는 `URL`데이터베이스 연결을 설정하기 위해 일부 자격 증명과 함께를 사용 합니다.
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| 일반적으로 DataSource의 구성을 완전히 제어하기위한 고급 예제는 [“How-to” section](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-configure-a-datasource)을 참조하십시오. |
+
+<br>
+
+##### 31.1.1 내장 데이터베이스 지원
+
+메모리 내장 데이터베이스를 사용하여 응용 프로그램을 개발하는 것이 종종 편리합니다. 분명히 in-memory databases는 영구 저장소를 제공하지 않습니다. 응용 프로그램이 시작되면 데이터베이스를 채우고 응용 프로그램이 끝나면 데이터를 버릴 준비가 필요합니다.
+
+> 인메모리 데이터베이스는 데이터 스토리지의 메인 메모리에 설치되어 운영되는 방식의 데이터베이스 관리 시스템이다. 
+
+<br>
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| "방법"섹션에는 [데이터베이스를 초기화하는 방법에 대한](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-database-initialization) 섹션이 포함되어 [있습니다](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-database-initialization) . |
+
+스프링 부트는 내장 된 [H2](https://www.h2database.com/) , [HSQL](http://hsqldb.org/) 및 [Derby](https://db.apache.org/derby/) 데이터베이스를 자동 구성 할 수 있습니다 . 연결 URL을 제공 할 필요가 없습니다. 사용할 내장 데이터베이스에 빌드 종속성 만 포함하면됩니다.
+
+<br>
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 테스트에서 이 기능을 사용하는 경우 사용하는 응용 프로그램 컨텍스트의 수에 관계없이 전체 테스트 묶에서 동일한 데이터베이스가 다시 사용된다는 것을 알 수 있습니다. 각 컨텍스트에 별도의 내장 데이터베이스가 있는지 확인하려면 `pring.datasource.generate-unique-name`를 `true `로 설정해야 합니다. |
+
+예를 들어, 일반적인 POM 종속성은 다음과 같습니다.
+
+<br>
+
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.hsqldb</groupId>
+	<artifactId>hsqldb</artifactId>
+	<scope>runtime</scope>
+</dependency>
+```
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 내장 데이터베이스를 자동으로 구성하려면 `spring-jdbc`에 대한 종속성이 필요합니다. 이 예에서는 `spring-boot-starter-data-jpa`.를 통해 transitively 끌어 당깁니다. |
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| 어떤 이유로 든 포함 된 데이터베이스의 연결 URL을 구성한 경우 데이터베이스의 자동 종료가 비활성화되었는지 확인하십시오. H2를 사용하는 경우 `DB_CLOSE_ON_EXIT=FALSE`를 사용해야합니다. HSQLDB를 사용한다면, `shutdown=true`가 사용되지 않았는지 확인해야합니다. 데이터베이스의 자동 종료를 비활성화하면 데이터베이스가 닫힐 때 스프링 부팅을 제어 할 수 있으므로 데이터베이스 액세스가 더 이상 필요하지 않게됩니다. |
+
+<br>
+
+##### 31.1.2 프로덕션 데이터베이스에 대한 연결
+
+프로덕션 데이터베이스 연결은 `DataSource`풀링을 사용하여 자동 구성 할 수도 있습니다. Spring Boot는 특정 구현을 선택하기 위해 다음 알고리즘을 사용합니다 :
+
+1. 우리는 [HikariCP](https://github.com/brettwooldridge/HikariCP) 의 성능과 동시성을 선호 합니다. HikariCP를 사용할 수 있다면, 우리는 항상 그것을 선택합니다.
+2. 그렇지 않으면 Tomcat 풀링 `DataSource`을 사용할 수있는 경우 이를 사용합니다.
+3. HikariCP 나 Tomcat 풀링 데이터 소스가 없으며 [Commons DBCP2](https://commons.apache.org/proper/commons-dbcp/) 가 사용 가능 [하다면](https://commons.apache.org/proper/commons-dbcp/) 이를 사용합니다.
+
+<br>
+
+> 히카리 커넥션풀은 빠른 속도로인해 점점 더 주목받고 있는 커넥션풀입니다.
+
+ `spring-boot-starter-jdbc`또는 `spring-boot-starter-data-jpa`를 당신이 사용하는 경우 "staters"를 사용하면 자동으로 `HikariCP`에 의존하게 됩니.
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 해당 알고리즘을 완전히 생략하고 `spring.datasource.type`속성 을 설정하여 사용할 연결 풀을 지정할 수 있습니다 . 이것은 `tomcat-jdbc`에의해 기본적으로 제공되는 Tomcat 컨테이너에서 애플리케이션을 실행하는 경우 특히 중요합니다 . |
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| 추가 연결 풀은 항상 수동으로 구성 할 수 있습니다. 자신의 `DataSource`bean 을 정의하면 자동 구성이 발생하지 않습니다. |
+
+DataSource 구성은 `spring.datasource.*`의 외부 구성 등록 정보에 의해 제어됩니다. 예를 들어 `application.properties`에 다음 섹션을 다음과 같이 선언 할 수 있습니다.
+
+```
+spring.datasource.url = jdbc : mysql : // localhost / test
+spring.datasource.username = dbuser
+spring.datasource.password = dbpass
+spring.datasource.driver-class-name = com.mysql.jdbc.Driv
+```
+
+<br>
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 적어도 `spring.datasource.url` 속성 을 설정하여 URL을 지정해야 합니다. 그렇지 않으면, Spring Boot는 내장 된 데이터베이스를 자동 설정하려고합니다. |
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| Spring Boot는  `url`로부터 대부분의  데이터베이스위해 그것을 추론 할 수 있기 때문에 종종 `driver-class-name`을 지정할 필요가 없습니다. |
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 풀링 `DataSource`을 만들려면 유효한 `Driver`클래스가 사용 가능한지 확인할 수 있어야 합니다. 그래서 우리는 무엇인가하기 전에 체크합니다. 즉, 설정 `spring.datasource.driver-class-name=com.mysql.jdbc.Driver`하면 해당 클래스를로드 할 수 있어야합니다. |
+
+지원되는 옵션에 대한 자세한 내용은 [`DataSourceProperties`](https://github.com/spring-projects/spring-boot/tree/v2.1.5.RELEASE/spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.java)를 참조하십시오. 이것은 실제 구현과 상관없이 작동하는 표준 옵션입니다. 구현 관련 설정을 각 접두사  ( `spring.datasource.hikari.*`, `spring.datasource.tomcat.*`및 `spring.datasource.dbcp2.*`)를 사용하여 세부 조정할 수도 있습니다. 자세한 내용은 사용중인 연결 풀 구현의 설명서를 참조하십시오.
+
+<br>
+
+예를 들어, [Tomcat 연결 풀](https://tomcat.apache.org/tomcat-8.0-doc/jdbc-pool.html#Common_Attributes)을 사용하는 경우 다음 예제와 같이 많은 추가 설정을 사용자 정의 할 수 있습니다.
+
+```
+# 사용할 수있는 연결이없는 경우 예외를 throw하기 전에 대기 할 시간 (밀리 초)입니다. 
+spring.datasource.tomcat.max-wait = 10000
+
+#이 풀에서 동시에 할당 할 수있는 최대 활성 연결 수입니다. 
+spring.datasource.tomcat.max-active = 50
+
+# 풀에서 빌리기 전에 연결을 검증하십시오. 
+spring.datasource.tomcat.test-on-borrow = true
+```
+
+##### 31.1.3 JNDI 데이터 소스에 연결
+
+Spring Boot 애플리케이션을 Application Server에 배포하는 경우 Application Server의 내장 기능을 사용하여 DataSource를 구성 및 관리하고 JNDI를 사용하여 액세스 할 수 있습니다.
+
+<br>
+
+Spring Boot 애플리케이션을 Application Server에 배포하는 경우 Application Server의 내장 기능을 사용하여 DataSource를 구성 및 관리하고 JNDI를 사용하여 액세스 할 수 있습니다.
+
+<br>
+
+spring.datasource.jndi-name 속성은 `spring.datasource.url`, `spring.datasource.username`및 `spring.datasource.password` 속성의 대안으로 사용되어 특정 JNDI 위치에서 `DataSource`에 액세스 할 수 있습니다. 예를 들어 `application.properties`의 다음 섹션에서는 JBoss AS에 정의 된 DataSource에 액세스하는 방법을 보여줍니다.
+
+```
+spring.datasource.jndi-name = java : jboss / datasources / customers
+```
+
+<br>
+
+#### 31.2 JdbcTemplate 사용
+
+Spring의 클래스 `JdbcTemplate`와 `NamedParameterJdbcTemplate`클래스는 `@Autowire`로 자동으로 구성되며 다음 예제와 같이 직접 bean에 넣을 수 있습니다.
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MyBean {
+
+	private final JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	public MyBean(JdbcTemplate jdbcTemplate) {
+		this.jdbcTemplate = jdbcTemplate;
+	}
+
+	// ...
+
+}
+```
+
+다음 예제와 같이 `spring.jdbc.template.*`속성 을 사용하여 템플릿의 일부 속성을 사용자 정의 할 수 있습니다.
+
+<br>
+
+```
+spring.jdbc.template.max-rows = 500
+```
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| `NamedParameterJdbcTemplate` 뒤에서 동일한 `JdbcTemplate`인스턴스를 재사용합니다. 둘 이상의 `JdbcTemplate`이 정의되고 기본 후보가없는 경우 `NamedParameterJdbcTemplate`은 자동으로 구성되지 않습니다. |
+
+<br>
+
+#### 31.3 JPA와 스프링 데이터 JPA
+
+Java Persistence API는 객체를 관계형 데이터베이스에 "매핑"할 수있는 표준 기술입니다. `spring-boot-starter-data-jpa`POM은 시작하는 빠른 방법을 제공합니다. 다음과 같은 주요 종속성을 제공합니다.
+
+- Hibernate : 가장 인기있는 JPA 구현 중 하나.
+- Spring Data JPA : JPA 기반 리포지토리를 쉽게 구현할 수 있습니다.
+- Spring ORMs : Spring Framework의 핵심 ORM 지원.
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| JPA 또는 [Spring Data](https://projects.spring.io/spring-data/)에 대한 세부 정보는 여기에 포함되지 않습니다. [spring.io](https://spring.io/)에서 "JPA로 데이터 접근하기"가이드를 따르고 Spring Data JPA와 Hibernate 참조 문서를 읽을 수있다. |
+
+<br>
+
+##### 31.3.1 엔티티 클래스
+
+전통적으로 JPA "Entity"클래스는 `persistence.xml`파일에 지정 됩니다. Spring Boot를 사용하면 이 파일은 필요 없으며 "Entity Scanning"이 대신 사용됩니다. 기본적으로 기본 구성 클래스 ( `@EnableAutoConfiguration`또는로 주석 처리 된 패키지) 아래의 모든 패키지 `@SpringBootApplication`가 검색됩니다.
+
+<br>
+
+모든 클래스는 주석 `@Entity`, `@Embeddable`또는 `@MappedSuperclass`간주됩니다. 일반적인 엔티티 클래스는 다음 예제와 유사합니다.
+
+```java
+package com.example.myapp.domain;
+
+import java.io.Serializable;
+import javax.persistence.*;
+
+@Entity
+public class City implements Serializable {
+
+	@Id
+	@GeneratedValue
+	private Long id;
+
+	@Column(nullable = false)
+	private String name;
+
+	@Column(nullable = false)
+	private String state;
+
+	// ... additional members, often include @OneToMany mappings
+
+	protected City() {
+		// no-args constructor required by JPA spec
+		// this one is protected since it shouldn't be used directly
+	}
+
+	public City(String name, String state) {
+		this.name = name;
+		this.state = state;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public String getState() {
+		return this.state;
+	}
+
+	// ... etc
+
+}
+```
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| `@EntityScan`어노테이션 을 사용하여 엔티티 스캐닝 위치를 사용자 정의 할 수 있습니다 . " [84.4 절."Spring 구성과 @Entity 정의의 분리](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-separate-entity-definitions-from-spring-configuration) " [절을](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-separate-entity-definitions-from-spring-configuration) 참조하십시오 . |
+
+<br>
+
+##### 31.3.2 스프링 데이터 JPA 저장소
+
+[스프링 데이터 JPA](https://projects.spring.io/spring-data-jpa/) 리포지토리는 데이터에 액세스하기 위해 정의 할 수있는 인터페이스입니다. JPA 쿼리는 메소드 이름에서 자동으로 작성됩니다. 예를 들어, `CityRepository`인터페이스는  `findAllByState(String state)` 메소드를 선언하여 주어진 상태에서 모든 도시를 찾는 할 수 있습니다 .
+
+
+
+보다 복잡한 쿼리의 경우, Spring 데이터의 [`Query`](https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/Query.html)annotation으로 메소드에 주석을 달 수 있습니다 .
+
+‌
+
+Spring 데이터 저장소는 일반적으로 [`Repository`](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/Repository.html)또는 [`CrudRepository`](https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/CrudRepository.html) 인터페이스 에서 확장 됩니다. 당신이 자동 구성을 사용하는 경우, 저장소는 기본 구성 클래스 ( `@EnableAutoConfiguration`또는 `@SpringBootApplication`주석 이 포함 된 패키지)에서 저장소가 검색됩니다.
+
+
+
+다음 예제는 일반적인 스프링 데이터 저장소 인터페이스 정의를 보여줍니다.
+
+```java
+package com.example.myapp.domain;
+
+import org.springframework.data.domain.*;
+import org.springframework.data.repository.*;
+
+public interface CityRepository extends Repository<City, Long> {
+
+	Page<City> findAll(Pageable pageable);
+
+	City findByNameAndStateAllIgnoringCase(String name, String state);
+
+}
+```
+
+Spring 데이터 JPA 저장소는 세 가지 다른 부트 스트래핑 모드를 지원합니다 : default, deferred, and lazy. deferred or lazy 부트 스트랩을 사용하려면 `spring.data.jpa.repositories.bootstrap-mode`을 각각  `deferred`또는 `lazy`설정하십시오. deferred or lazy 부트 스트랩을 사용할 때, 자동 구성된  `EntityManagerFactoryBuilder` 는  컨텍스트를 `AsyncTaskExecutor`를 부트 스트랩 실행 프로그램으로 사용합니다 (있는 경우). 둘 이상이 있으면 이름 `applicationTaskExecutor`이 지정된 이름으로 사용됩니다.
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| Spring Data JPA의 표면을 간신히 긁어 모았습니다. 자세한 내용은 [Spring 데이터 JPA 참조 문서를 참조](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/) 하십시오 . |
+
+<br>
+
+##### 31.3.3 JPA 데이터베이스 생성 및 삭제
