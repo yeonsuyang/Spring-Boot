@@ -32,3 +32,10 @@ out/
 
 ### VS Code ###
 .vscode/
+.gitignore
+build.gradle
+gradle/
+gradlew
+gradlew.bat
+settings.gradle
+src/
