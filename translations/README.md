@@ -3750,13 +3750,13 @@ CSRF 보호에 대한 추가 정보는 [Spring Security Reference Guide](https:/
 
 ### 31.SQL 데이터베이스 작업 by ys
 
-[스프링 프레임 워크](https://projects.spring.io/spring-framework/)는 Hibernate와 같은 "객체 관계형 매핑"기술을 완성하기 위해 `JdbcTemplate`을 사용하는 JDBC 직접 액세스에서부터 SQL 데이터베이스 작업에 대한 광범위한 지원을 제공합니다. [Spring Data](https://projects.spring.io/spring-data/)는 인터페이스에서 직접 `Repository` 구현을 만들고 컨벤션을 사용하여 메서드 이름에서 쿼리를 생성하는 등의 추가 기능을 제공합니다.
+[스프링 프레임 워크](https://projects.spring.io/spring-framework/)는 Hibernate와 같은 "객체 관계형 매핑"기술을 완성하기 위해 `JdbcTemplate`을 사용하는 JDBC 직접 액세스에서부터 SQL 데이터베이스 작업에 대한 광범위한 지원을 제공합니다. [Spring Data](https://projects.spring.io/spring-data/)는 인터페이스에서 직접 `Repository` 구현을 생성하고 규칙을 사용하여 메서드 이름에서 쿼리를 생성하는 등의 추가 기능을 제공합니다.
 
 <br>
 
 #### 31.1 Configure a DataSource
 
-Java의 `javax.sql.DataSource`인터페이스는 데이터베이스 연결 작업의 표준 방법을 제공합니다. 전통적으로 'DataSource'는 `URL`데이터베이스 연결을 설정하기 위해 일부 자격 증명과 함께를 사용 합니다.
+Java의 `javax.sql.DataSource`인터페이스는 데이터베이스 연결 작업의 표준 방법을 제공합니다. 전통적으로 'DataSource'는 일부 자격 증명과 함께`URL`을 사용하여 데이터베이스 연결을 설정합니다.
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
@@ -3766,15 +3766,19 @@ Java의 `javax.sql.DataSource`인터페이스는 데이터베이스 연결 작�
 
 ##### 31.1.1 내장 데이터베이스 지원
 
-메모리 내장 데이터베이스를 사용하여 응용 프로그램을 개발하는 것이 종종 편리합니다. 분명히 in-memory databases는 영구 저장소를 제공하지 않습니다. 응용 프로그램이 시작되면 데이터베이스를 채우고 응용 프로그램이 끝나면 데이터를 버릴 준비가 필요합니다.
+메모리 내장 데이터베이스를 사용하여 응용 프로그램을 개발하는 것이 편리한 경우가 많습니다. 분명 in-memory databases는 영구 저장소를 제공하지 않습니다. 애플리케이션이 시작되면 데이터베이스를 채우고 애플리케이션이 끝나면 데이터가 삭제됩니다. 
 
 > 인메모리 데이터베이스는 데이터 스토리지의 메인 메모리에 설치되어 운영되는 방식의 데이터베이스 관리 시스템이다. 
+>
+> NoSQL 방식에 속하는 데이터베이스 이며, key-value방식을 사용하고 있습니다.
+>
+> 출처: <https://toma0912.tistory.com/83> [토마의 개발노트]
 
 <br>
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
-| "방법"섹션에는 [데이터베이스를 초기화하는 방법에 대한](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-database-initialization) 섹션이 포함되어 [있습니다](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-database-initialization) . |
+| "How-to"섹션에는 [데이터베이스를 초기화하는 방법에 대한](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-database-initialization) 섹션이 포함되어 있습니다. |
 
 스프링 부트는 내장 된 [H2](https://www.h2database.com/) , [HSQL](http://hsqldb.org/) 및 [Derby](https://db.apache.org/derby/) 데이터베이스를 자동 구성 할 수 있습니다 . 연결 URL을 제공 할 필요가 없습니다. 사용할 내장 데이터베이스에 빌드 종속성 만 포함하면됩니다.
 
@@ -3782,7 +3786,7 @@ Java의 `javax.sql.DataSource`인터페이스는 데이터베이스 연결 작�
 
 | ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
 | ------------------------------------------------------------ |
-| 테스트에서 이 기능을 사용하는 경우 사용하는 응용 프로그램 컨텍스트의 수에 관계없이 전체 테스트 묶에서 동일한 데이터베이스가 다시 사용된다는 것을 알 수 있습니다. 각 컨텍스트에 별도의 내장 데이터베이스가 있는지 확인하려면 `pring.datasource.generate-unique-name`를 `true `로 설정해야 합니다. |
+| 테스트에서 이 기능을 사용하는 경우 사용하는 응용 프로그램 컨텍스트의 수에 관계없이 전체 테스트 묶에서 동일한 데이터베이스가 다시 사용된다는 것을 알 수 있습니다. 각 컨텍스트에 별도의 내장 데이터베이스가 있는지 확인하려면 `spring.datasource.generate-unique-name`를 `true `로 설정해야 합니다. |
 
 예를 들어, 일반적인 POM 종속성은 다음과 같습니다.
 
@@ -3802,11 +3806,11 @@ Java의 `javax.sql.DataSource`인터페이스는 데이터베이스 연결 작�
 
 | ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
 | ------------------------------------------------------------ |
-| 내장 데이터베이스를 자동으로 구성하려면 `spring-jdbc`에 대한 종속성이 필요합니다. 이 예에서는 `spring-boot-starter-data-jpa`.를 통해 transitively 끌어 당깁니다. |
+| 내장 데이터베이스를 자동으로 구성하려면 `spring-jdbc`에 대한 종속성이 필요합니다. 이 예에서는 `spring-boot-starter-data-jpa`를 통해 전이적으로 끌어 당깁니다. |
 
 | ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
 | ------------------------------------------------------------ |
-| 어떤 이유로 든 포함 된 데이터베이스의 연결 URL을 구성한 경우 데이터베이스의 자동 종료가 비활성화되었는지 확인하십시오. H2를 사용하는 경우 `DB_CLOSE_ON_EXIT=FALSE`를 사용해야합니다. HSQLDB를 사용한다면, `shutdown=true`가 사용되지 않았는지 확인해야합니다. 데이터베이스의 자동 종료를 비활성화하면 데이터베이스가 닫힐 때 스프링 부팅을 제어 할 수 있으므로 데이터베이스 액세스가 더 이상 필요하지 않게됩니다. |
+| 어떤 이유로든 내장 데이터베이스의 연결 URL을 구성한 경우 데이터베이스의 자동 종료가 비활성화되었는지 확인하십시오. H2를 사용하는 경우 `DB_CLOSE_ON_EXIT=FALSE`를 사용해야합니다. HSQLDB를 사용한다면, `shutdown=true`가 사용되지 않았는지 확인해야합니다. 데이터베이스의 자동 종료를 비활성화하면 데이터베이스가 닫힐 때 스프링 부팅을 제어 할 수 있으므로 데이터베이스 액세스가 더 이상 필요하지 않게됩니다. |
 
 <br>
 
@@ -3871,6 +3875,8 @@ spring.datasource.tomcat.max-active = 50
 # 풀에서 빌리기 전에 연결을 검증하십시오. 
 spring.datasource.tomcat.test-on-borrow = true
 ```
+
+<br>
 
 ##### 31.1.3 JNDI 데이터 소스에 연결
 
@@ -4040,3 +4046,181 @@ Spring 데이터 JPA 저장소는 세 가지 다른 부트 스트래핑 모드�
 <br>
 
 ##### 31.3.3 JPA 데이터베이스 생성 및 삭제
+
+기본적으로 JPA 데이터베이스는 내장 데이터베이스 (H2, HSQL 또는 Derby)를 사용하는 경우 **에만** 자동으로 생성 **됩니다** . `spring.jpa.*`특성 을 사용하여 JPA 설정을 명시 적으로 구성 할 수 있습니다 . 예를 들어, 테이블을 작성하고 제거하려면 다음 행을 `application.properties`다음에 추가 할 수 있습니다 .
+
+```
+spring.jpa.hibernate.ddl-auto = create-drop
+```
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 이것에 대한 Hibernate의 내부 속성 이름 (만약 당신이 그것을 더 잘 기억한다면)이있다 `hibernate.hbm2ddl.auto`. 다른 Hibernate 네이티브 프로퍼티들과 함께 이것을 사용할 수있다. `spring.jpa.properties.*`(접두사는 엔티티 관리자에 추가하기 전에 제거된다.) 다음 줄은 Hibernate를위한 JPA 속성 설정의 예를 보여준다. |
+
+```
+spring.jpa.properties.hibernate.globally_quoted_identifiers = true
+```
+
+앞의 예제에서의 라인은 `hibernate.globally_quoted_identifiers`프로퍼티 에 대한 `true`값을 Hibernate 엔티티 관리자로 전달한다.
+
+
+
+기본적으로 DDL 실행 (또는 유효성 검사)은 `ApplicationContext` 시작될 때까지 연기 됩니다. `spring.jpa.generate-ddl`플래그 도 있지만 Hibernate 자동 구성이 활성화되어 있으면 `ddl-auto`설정이 더 세밀 하기 때문에 사용되지 않습니다 .
+
+<br>
+
+##### 31.3.4 뷰에서 EntityManager 열기
+
+웹 어플리케이션을 실행하고 있다면 Spring Boot는 기본적 [`OpenEntityManagerInViewInterceptor`](https://docs.spring.io/spring/docs/5.1.7.RELEASE/javadoc-api/org/springframework/orm/jpa/support/OpenEntityManagerInViewInterceptor.html) 으로 웹 뷰에서 느슨한 로딩을 허용하기 위해 "View에서 EntityManager 열기"패턴을 적용하도록 등록 합니다. 이 동작을 원하지 않는 경우, 당신은`application.properties`에서 `spring.jpa.open-in-view`을 `false`으로 정해야합니다. 
+
+<br>
+
+#### 31.4 스프링 데이터 JDBC
+
+Spring 데이터는 JDBC에 대한 저장소 지원을 포함하며 `CrudRepository`메소드에 대한 SQL을 자동으로 생성합니다 `CrudRepository`. 고급 쿼리의 경우 `@Query`주석이 제공됩니다.
+
+‌
+
+필요한 의존성이 클래스 패스에있을 때 스프링 부트는 스프링 데이터의 JDBC 저장소를 자동으로 구성합니다. `spring-boot-starter-data-jdbc`에 대한 단일 종속성을 사용하여 프로젝트에 추가 할 수 있습니다 . 필요하다면 `@EnableJdbcRepositories`애노테이션이나 `JdbcConfiguration`서브 클래스를 애플리케이션 에 추가함으로써 Spring Data JDBC의 설정을 제어 할 수있다 .
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| Spring Data JDBC에 대한 자세한 내용은 [참조 문서](https://projects.spring.io/spring-data-jdbc/) 를 참조하십시오 . |
+
+<br>
+
+#### 31.5 H2의 웹 콘솔 사용
+
+[H2 데이터베이스는](https://www.h2database.com/) 제공하는 [브라우저 기반의 콘솔](https://www.h2database.com/html/quickstart.html#h2_console) 봄 부팅 당신을 위해 자동으로 구성 할 수 있습니다. 다음 조건이 충족되면 콘솔이 자동으로 구성됩니다.
+
+
+
+- 서블릿 기반 웹 애플리케이션을 개발 중입니다.
+- `com.h2database:h2` classpath에 있습니다.
+- 당신은 [스프링 부트의 개발자 도구를 사용하고 있습니다](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#using-boot-devtools) .
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| Spring의 개발자 도구를 사용하고 있지 않지만 여전히 H2의 콘솔을 사용하려는 경우 `spring.h2.console.enabled`속성을 `true` 값으로 구성 할 수 있습니다. |
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| H2 콘솔은 개발 중에 만 사용하기 때문에 production에서`spring.h2.console.enabled`가 `true`로 설정되지 않도록주의해야합니다. |
+
+‌<br>
+
+##### 31.5.1 H2 콘솔 경로 변경
+
+‌<br>
+
+기본적으로 `/h2-console`에서 콘솔을 사용할 수 있습니다. `spring.h2.console.path`속성 을 사용하여 콘솔 경로를 사용자 정의 할 수 있습니다 .
+
+<br>
+
+#### 31.6 jOOQ 사용하기
+
+Java Object Oriented Querying ( [jOOQ](https://www.jooq.org/) )은 데이터베이스에서 Java 코드를 생성하고 유창한 API를 통해 유형 안전 SQL 쿼리를 작성할 수있게 해주는 [Data ](https://www.datageekery.com/)[Geekery](https://www.jooq.org/) 에서 널리 사용되는 제품입니다 . 상용 및 오픈 소스 에디션 모두 Spring Boot와 함께 사용할 수 있습니다.
+
+‌
+
+##### 31.6.1 코드 생성
+
+‌
+
+jOOQ 타입 안전 질의를 사용하려면 데이터베이스 스키마에서 Java 클래스를 생성해야한다. jOOQ 사용자 설명서의 지침을 따를 수 있습니다. `jooq-codegen-maven`플러그인을 사용하고 `spring-boot-starter-parent` "parent POM"도 사용하는 경우 안전하게 플러그인의  태그를 생략 할 수 있습니다. Spring 부트 정의 버전 변수 (예 : h`h2.version`)를 사용하여 플러그인의 데이터베이스 종속성을 선언 할 수도 있습니다. 다음 목록은 예제를 보여줍니다.
+
+```xml
+<plugin>
+	<groupId>org.jooq</groupId>
+	<artifactId>jooq-codegen-maven</artifactId>
+	<executions>
+		...
+	</executions>
+	<dependencies>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>${h2.version}</version>
+		</dependency>
+	</dependencies>
+	<configuration>
+		<jdbc>
+			<driver>org.h2.Driver</driver>
+			<url>jdbc:h2:~/yourdatabase</url>
+		</jdbc>
+		<generator>
+			...
+		</generator>
+	</configuration>
+</plugin>
+```
+
+##### 31.6.2 DSLContext 사용
+
+
+
+jOOQ가 제공하는 유창한 API는 `org.jooq.DSLContext` 인터페이스를 통해 시작됩니다. Spring Boot는 DSLContext를 Spring Bean으로 자동 구성하고이를 응용 프로그램 `DataSource`에 연결합니다. `DSLContext`를 사용하려면 다음 예제와 같이 `@Autowire`를 사용할 수 있습니다.
+
+```java
+@Component
+public class JooqExample implements CommandLineRunner {
+
+	private final DSLContext create;
+
+	@Autowired
+	public JooqExample(DSLContext dslContext) {
+		this.create = dslContext;
+	}
+
+}
+```
+
+| ![[팁]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/tip.png) |
+| ------------------------------------------------------------ |
+| jOOQ 매뉴얼은 `create`라는 변수를 사용하여 `DSLContext`를 유지하는 경향이 있습니다. |
+
+‌
+
+그런 다음에 `DSLContext`를 사용하여 다음 예제와 같이 쿼리를 구성 할 수 있습니다 .
+
+```java
+public List<GregorianCalendar> authorsBornAfter1980() {
+	return this.create.selectFrom(AUTHOR)
+		.where(AUTHOR.DATE_OF_BIRTH.greaterThan(new GregorianCalendar(1980, 0, 1)))
+		.fetch(AUTHOR.DATE_OF_BIRTH);
+}
+```
+
+##### 31.6.3 jOOQ SQL Dialect
+
+‌
+
+`spring.jooq.sql-dialect` 속성이 구성되어 있지 않으면 Spring Boot가 데이터 소스에 사용할 SQL 언어를 결정합니다. 스프링 부트가 방언을 탐지하지 못하면 `DEFAULT`를 사용합니다.
+
+| ![[노트]](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/images/note.png) |
+| ------------------------------------------------------------ |
+| 스프링 부트는 오픈 소스 버전의 jOOQ가 지원하는 dialects 만 자동 구성 할 수 있습니다. |
+
+‌
+
+##### 31.6.4 jOOQ 커스터마이징
+
+
+
+jooQ `Configuration`이 생성 될 때 사용되는 `@Bean`정의를 정의하여 더 많은 고급 사용자 정의를 구현할 수 있습니다. 다음 jOOQ 유형에 대해 bean을 정의 할 수 있습니다.
+
+‌
+
+- `ConnectionProvider`
+- `ExecutorProvider`
+- `TransactionProvider`
+- `RecordMapperProvider`
+- `RecordUnmapperProvider`
+- `RecordListenerProvider`
+- `ExecuteListenerProvider`
+- `VisitListenerProvider`
+- `TransactionListenerProvider`
+
+‌
+
+또한 jOOQ 설정을 완벽하게 제어하려면`org.jooq.Configuration @Bean`을 직접 생성 할 수 있습니다.
